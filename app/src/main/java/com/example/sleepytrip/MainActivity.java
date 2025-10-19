@@ -42,9 +42,17 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigationView.setBackground(null);
         binding.bottomNavigationView.setPadding(0, 0, 0, 0);
 
+        // Try to remove padding from child view as well
+        if (binding.bottomNavigationView.getChildCount() > 0) {
+            ViewGroup menuView = (ViewGroup) binding.bottomNavigationView.getChildAt(0);
+            if (menuView != null) {
+                menuView.setPadding(0, 0, 0, 0);
+            }
+        }
+
         // Load initial fragment only if savedInstanceState is null
         if (savedInstanceState == null) {
-            replaceFragment(new HomeFragment());
+            replaceFragment(new HomeFragment(), true);
         }
 
         // Обработчик для bottom navigation
@@ -52,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.home) {
-                replaceFragment(new HomeFragment());
+                replaceFragment(new HomeFragment(), true);
                 return true;
             } else if (itemId == R.id.more) {
                 // Открываем drawer при клике на More
@@ -67,17 +75,12 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-
-            if(itemId == R.id.drawer_home){
-                // Домашняя страница
-                replaceFragment(new HomeFragment());
-            }
-            else if(itemId == R.id.drawer_settings) {
+            if (itemId == R.id.drawer_settings) {
                 // Открыть настройки
-                replaceFragment(new SettingsFragment());
+                replaceFragment(new SettingsFragment(), true);
             } else if (itemId == R.id.drawer_about) {
                 // О приложении
-                replaceFragment(new AboutFragment());
+                replaceFragment(new AboutFragment(), true);
             } else if (itemId == R.id.drawer_exit) {
                 // Выход
                 finish();
@@ -86,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
             // Закрываем drawer после выбора пункта
             drawerLayout.closeDrawer(navigationView);
             return true;
+        });
+
+        // Обработчик для FAB кнопки
+        binding.fabAdd.setOnClickListener(v -> {
+            replaceFragment(new AddLocationFragment(), false);
         });
 
         // Apply window insets to frame_layout instead of main
@@ -97,10 +105,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void replaceFragment(Fragment fragment) {
+    public void replaceFragment(Fragment fragment, boolean showBottomNav) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout, fragment);
         fragmentTransaction.commit();
+
+        // Показываем или скрываем bottom navigation
+        if (showBottomNav) {
+            binding.bottomAppBar.setVisibility(View.VISIBLE);
+            binding.fabAdd.setVisibility(View.VISIBLE);
+        } else {
+            binding.bottomAppBar.setVisibility(View.GONE);
+            binding.fabAdd.setVisibility(View.GONE);
+        }
     }
 }
