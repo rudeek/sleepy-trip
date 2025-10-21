@@ -316,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
             // Когда пользователь нажмёт на стрелку, вызовется handleBackNavigation()
             toolbar.setNavigationOnClickListener(v -> handleBackNavigation());
         } else {
+
             // === РЕЖИМ "ГАМБУРГЕР" ===
 
             // Разблокируем drawer - теперь его можно открыть свайпом
