@@ -2,12 +2,16 @@ package com.example.sleepytrip;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -17,13 +21,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.sleepytrip.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private Toolbar toolbar;
+    private ActionBarDrawerToggle drawerToggle;
 
     @SuppressLint("ResourceType")
     @Override
@@ -38,16 +43,25 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = binding.drawerLayout;
         navigationView = binding.navView;
 
-        // Fix bottom navigation padding
-        binding.bottomNavigationView.setBackground(null);
-        binding.bottomNavigationView.setPadding(0, 0, 0, 0);
+        // Инициализируем Toolbar
+        toolbar = binding.toolbar;
+        setSupportActionBar(toolbar);
 
-        // Try to remove padding from child view as well
-        if (binding.bottomNavigationView.getChildCount() > 0) {
-            ViewGroup menuView = (ViewGroup) binding.bottomNavigationView.getChildAt(0);
-            if (menuView != null) {
-                menuView.setPadding(0, 0, 0, 0);
-            }
+        // Настраиваем drawer toggle (кнопка гамбургер в toolbar)
+        drawerToggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerToggle.syncState();
+
+        // Устанавливаем заголовок toolbar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("SleepyTrip");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Показываем кнопку назад/гамбургер
         }
 
         // Load initial fragment only if savedInstanceState is null
@@ -55,39 +69,20 @@ public class MainActivity extends AppCompatActivity {
             replaceFragment(new HomeFragment(), true);
         }
 
-        // Обработчик для bottom navigation
-        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.home) {
-                replaceFragment(new HomeFragment(), true);
-                return true;
-            } else if (itemId == R.id.more) {
-                // Открываем drawer при клике на More
-                drawerLayout.openDrawer(navigationView);
-                return true;
-            }
-
-            return false;
-        });
-
         // Обработчик для drawer menu
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.drawer_settings) {
-                // Открыть настройки
-                replaceFragment(new SettingsFragment(), true);
+                replaceFragment(new SettingsFragment(), false);
             } else if (itemId == R.id.drawer_about) {
-                // О приложении
-                replaceFragment(new AboutFragment(), true);
+                replaceFragment(new AboutFragment(), false);
             } else if (itemId == R.id.drawer_exit) {
-                // Выход
                 finish();
             }
 
             // Закрываем drawer после выбора пункта
-            drawerLayout.closeDrawer(navigationView);
+            drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
 
@@ -95,14 +90,22 @@ public class MainActivity extends AppCompatActivity {
         binding.fabAdd.setOnClickListener(v -> {
             replaceFragment(new AddLocationFragment(), false);
         });
+    }
 
-        // Apply window insets to frame_layout instead of main
-        ViewCompat.setOnApplyWindowInsetsListener(binding.frameLayout, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            // Only apply top padding, let bottom navigation handle bottom
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
-            return insets;
-        });
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // Обрабатываем нажатие на кнопку гамбургер
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Синхронизируем состояние после восстановления активности
+        drawerToggle.syncState();
     }
 
     public void replaceFragment(Fragment fragment, boolean showBottomNav) {
