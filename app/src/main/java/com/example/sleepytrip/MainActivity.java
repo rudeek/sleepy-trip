@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
                 setToolbarTitle("Settings");
                 enableBackButton(true);
             } else if (fragment instanceof AboutFragment) {
-                setToolbarTitle("About");
+                setToolbarTitle("About us");
                 enableBackButton(true);
             } else if (fragment instanceof AddLocationFragment) {
                 setToolbarTitle("Add Location");

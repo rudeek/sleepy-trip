@@ -122,21 +122,63 @@
                     android:textColor="@color/lavender"
                     android:layout_marginBottom="12dp"/>
 
-                <TextView
+                <!-- Карточка участника 1 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Иваногло Екатерина"
-                    android:textSize="15sp"
-                    android:textColor="#424242"
-                    android:layout_marginBottom="4dp"/>
+                    android:orientation="horizontal"
+                    android:background="@drawable/team_member_background"
+                    android:padding="12dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
 
-                <TextView
+                    <TextView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:text="👩‍💻"
+                        android:textSize="24sp"
+                        android:gravity="center"
+                        android:background="@drawable/emoji_circle_background"
+                        android:layout_marginEnd="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Иваногло Екатерина"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#424242"/>
+
+                </LinearLayout>
+
+                <!-- Карточка участника 2 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Рудов Андрей"
-                    android:textSize="15sp"
-                    android:textColor="#424242"
-                    android:layout_marginBottom="4dp"/>
+                    android:orientation="horizontal"
+                    android:background="@drawable/team_member_background"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:text="👨‍💻"
+                        android:textSize="24sp"
+                        android:gravity="center"
+                        android:background="@drawable/emoji_circle_background"
+                        android:layout_marginEnd="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Рудов Андрей"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#424242"/>
+
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -144,6 +186,7 @@
                     android:text="© 2025 SleepyTrip"
                     android:textSize="13sp"
                     android:textColor="#757575"
+                    android:gravity="center"
                     android:alpha="0.7"/>
 
             </LinearLayout>
