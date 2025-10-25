@@ -353,6 +353,7 @@ public class MainActivity extends AppCompatActivity {
             // Разблокируем drawer - теперь его можно открыть свайпом
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
+
             // Убираем старый listener чтобы не было конфликтов
             drawerLayout.removeDrawerListener(drawerToggle);
 
