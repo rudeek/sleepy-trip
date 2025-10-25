@@ -232,6 +232,19 @@ public class MainActivity extends AppCompatActivity {
         // Начинаем транзакцию (группу изменений с фрагментами)
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
+        // === ДОБАВЛЯЕМ АНИМАЦИИ ===
+        // setCustomAnimations(enter, exit, popEnter, popExit)
+        // enter - анимация появления нового фрагмента
+        // exit - анимация исчезновения старого фрагмента
+        // popEnter - анимация при нажатии "назад" (появление)
+        // popExit - анимация при нажатии "назад" (исчезновение)
+        fragmentTransaction.setCustomAnimations(
+                R.anim.slide_in_right,   // Новый въезжает справа
+                R.anim.slide_out_left,   // Старый уезжает влево
+                R.anim.slide_in_left,    // При возврате въезжает слева
+                R.anim.slide_out_right   // При возврате уезжает вправо
+        );
+
         // Заменяем фрагмент в контейнере frame_layout на новый
         fragmentTransaction.replace(R.id.frame_layout, fragment);
 
@@ -240,20 +253,38 @@ public class MainActivity extends AppCompatActivity {
 
         // Решаем показывать или скрывать нижнюю навигацию
         if (showBottomNav) {
-            // Показываем BottomAppBar (нижняя панель)
-            binding.bottomAppBar.setVisibility(View.VISIBLE);
-            // Показываем FAB (круглую кнопку)
-            binding.fabAdd.setVisibility(View.VISIBLE);
+            // Плавно показываем
+            binding.bottomAppBar.animate()
+                    .alpha(1f)
+                    .translationY(0)
+                    .setDuration(300)
+                    .withStartAction(() -> binding.bottomAppBar.setVisibility(View.VISIBLE))
+                    .start();
 
-            // ВАЖНО: Если показываем bottom navigation, значит это HomeFragment
-            // Возвращаем гамбургер и заголовок
+            // Для FAB используем только alpha (без scale!)
+            binding.fabAdd.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .withStartAction(() -> binding.fabAdd.setVisibility(View.VISIBLE))
+                    .start();
+
             setToolbarTitle("SleepyTrip");
             enableBackButton(false);
         } else {
-            // Скрываем BottomAppBar
-            binding.bottomAppBar.setVisibility(View.GONE);
-            // Скрываем FAB
-            binding.fabAdd.setVisibility(View.GONE);
+            // Плавно скрываем
+            binding.bottomAppBar.animate()
+                    .alpha(0f)
+                    .translationY(binding.bottomAppBar.getHeight())
+                    .setDuration(300)
+                    .withEndAction(() -> binding.bottomAppBar.setVisibility(View.GONE))
+                    .start();
+
+            // Для FAB используем только alpha (без scale!)
+            binding.fabAdd.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> binding.fabAdd.setVisibility(View.GONE))
+                    .start();
 
             // ВАЖНО: Если скрываем bottom navigation, значит это Settings/About
             // Определяем какой заголовок показать
