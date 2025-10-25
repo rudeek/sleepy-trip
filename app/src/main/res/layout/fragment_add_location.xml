@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,7 +13,70 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/buttons_container"/>
+        android:layout_above="@id/radius_container"/>
+
+    <!-- Контейнер для настройки радиуса -->
+    <LinearLayout
+        android:id="@+id/radius_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttons_container"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/white"
+        android:elevation="4dp">
+
+        <!-- Заголовок и значение радиуса -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Радиус будильника"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/lavender"/>
+
+            <TextView
+                android:id="@+id/tv_radius_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="500 м"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/lavender"/>
+
+        </LinearLayout>
+
+        <!-- Слайдер для выбора радиуса -->
+        <com.google.android.material.slider.Slider
+            android:id="@+id/slider_radius"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:valueFrom="100"
+            android:valueTo="2000"
+            android:stepSize="50"
+            android:value="500"
+            app:thumbColor="@color/lavender"
+            app:trackColorActive="@color/lavender"
+            app:trackColorInactive="#E0E0E0"/>
+
+        <!-- Подсказка -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Будильник включится когда вы приблизитесь к выбранной точке"
+            android:textSize="12sp"
+            android:textColor="#757575"/>
+
+    </LinearLayout>
 
     <!-- Контейнер для кнопок внизу -->
     <LinearLayout

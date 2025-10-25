@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/info_window_background"
+    android:padding="16dp"
+    android:minWidth="250dp">
+
+    <!-- Название остановки/места -->
+    <TextView
+        android:id="@+id/info_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:maxLines="3"
+        android:ellipsize="end"/>
+
+    <!-- Адрес -->
+    <TextView
+        android:id="@+id/info_snippet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="14sp"
+        android:textColor="#757575"
+        android:maxLines="5"
+        android:ellipsize="end"/>
+
+</LinearLayout>

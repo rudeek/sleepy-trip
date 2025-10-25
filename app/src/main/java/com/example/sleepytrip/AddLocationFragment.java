@@ -2,6 +2,7 @@ package com.example.sleepytrip;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -15,15 +16,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,12 +39,20 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
     // Элементы интерфейса
     private Button btnAddLocation;
     private Button btnCancel;
+    private Slider sliderRadius;
+    private TextView tvRadiusValue;
 
     // Google Map объект
     private GoogleMap mMap;
 
     // Маркер который пользователь устанавливает на карте
     private Marker selectedMarker;
+
+    // Круг радиуса вокруг маркера
+    private Circle radiusCircle;
+
+    // Текущий радиус в метрах (по умолчанию 500м)
+    private float currentRadius = 500f;
 
     // Код запроса разрешения на геолокацию
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -50,9 +63,31 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         // Инфлейтим (создаём) view из XML layout
         View view = inflater.inflate(R.layout.fragment_add_location, container, false);
 
-        // Находим кнопки в layout
+        // Находим элементы в layout
         btnAddLocation = view.findViewById(R.id.btn_add_location);
         btnCancel = view.findViewById(R.id.btn_cancel);
+        sliderRadius = view.findViewById(R.id.slider_radius);
+        tvRadiusValue = view.findViewById(R.id.tv_radius_value);
+
+        // === ОБРАБОТЧИК СЛАЙДЕРА РАДИУСА ===
+        sliderRadius.addOnChangeListener((slider, value, fromUser) -> {
+            // Обновляем текущий радиус
+            currentRadius = value;
+
+            // Обновляем текст с значением радиуса
+            if (value >= 1000) {
+                // Если больше 1000м, показываем в километрах
+                tvRadiusValue.setText(String.format("%.1f км", value / 1000));
+            } else {
+                // Иначе показываем в метрах
+                tvRadiusValue.setText(String.format("%.0f м", value));
+            }
+
+            // Обновляем круг на карте если маркер установлен
+            if (radiusCircle != null && selectedMarker != null) {
+                radiusCircle.setRadius(currentRadius);
+            }
+        });
 
         // Получаем SupportMapFragment из layout
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -83,12 +118,36 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 // Получаем адрес по координатам
                 String address = getAddressFromLatLng(position);
 
-                // Показываем уведомление с адресом
+                // Показываем уведомление с адресом и радиусом
                 Toast.makeText(getContext(),
-                        "Location saved: " + address,
+                        "Location saved: " + address + "\nRadius: " + (int)currentRadius + "m",
                         Toast.LENGTH_LONG).show();
 
-                // TODO: Здесь будет сохранение в базу данных
+// Получаем database
+                AppDatabase db = AppDatabase.getInstance(requireContext());
+
+// Разделяем адрес на название и полный адрес
+                String[] addressParts = splitAddress(address);
+                String locationName = addressParts[0];
+                String fullAddress = addressParts[1].isEmpty() ? address : addressParts[1];
+
+// Создаём объект Location
+                Location location = new Location(
+                        locationName,           // Название
+                        fullAddress,            // Адрес
+                        position.latitude,      // Широта
+                        position.longitude,     // Долгота
+                        currentRadius           // Радиус
+                );
+
+// Сохраняем в базу данных
+                db.locationDao().insert(location);
+
+// Показываем уведомление
+                Toast.makeText(getContext(),
+                        "Location saved successfully!",
+                        Toast.LENGTH_SHORT).show();
+                // Сохраняем: position.latitude, position.longitude, address, currentRadius
 
                 // Возвращаемся на главную страницу
                 if (getActivity() instanceof MainActivity) {
@@ -111,6 +170,9 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
     public void onMapReady(@NonNull GoogleMap googleMap) {
         // Сохраняем ссылку на карту
         mMap = googleMap;
+
+        // === УСТАНАВЛИВАЕМ КАСТОМНЫЙ INFO WINDOW АДАПТЕР ===
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
         // Устанавливаем начальную позицию (Кишинёв, Молдова)
         LatLng chisinau = new LatLng(47.0105, 28.8638);
@@ -144,31 +206,130 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         // === ОБРАБОТЧИК КЛИКА ПО КАРТЕ ===
         // Когда пользователь нажимает на карту
         mMap.setOnMapClickListener(latLng -> {
-            // Удаляем предыдущий маркер если он был
+            // Удаляем предыдущий маркер и круг если они были
             if (selectedMarker != null) {
                 selectedMarker.remove();
             }
-
-            // Создаём новый маркер на месте клика
-            selectedMarker = mMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title("Selected Location")
-                    .draggable(true)); // Маркер можно перетаскивать
+            if (radiusCircle != null) {
+                radiusCircle.remove();
+            }
 
             // Получаем адрес по координатам
             String address = getAddressFromLatLng(latLng);
 
-            // Показываем адрес в информационном окне маркера
+            // Разделяем адрес на заголовок и описание
+            String[] addressParts = splitAddress(address);
+
+            // Создаём новый маркер на месте клика
+            selectedMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(addressParts[0])      // Название остановки/улица
+                    .snippet(addressParts[1])    // Полный адрес
+                    .draggable(true));            // Маркер можно перетаскивать
+
+            // Создаём круг радиуса вокруг маркера
+            radiusCircle = mMap.addCircle(new CircleOptions()
+                    .center(latLng)
+                    .radius(currentRadius)                          // Радиус в метрах
+                    .strokeColor(Color.parseColor("#8D6E63"))       // Цвет границы (коричневый)
+                    .strokeWidth(3f)                                 // Толщина границы
+                    .fillColor(Color.parseColor("#40D7CCC8")));     // Цвет заливки (полупрозрачный бежевый)
+
+            // Показываем информационное окно маркера
             if (selectedMarker != null) {
-                selectedMarker.setSnippet(address);
                 selectedMarker.showInfoWindow();
+            }
+        });
+
+        // === ОБРАБОТЧИК ПЕРЕТАСКИВАНИЯ МАРКЕРА ===
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+                // Начало перетаскивания - ничего не делаем
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+                // Во время перетаскивания обновляем позицию круга
+                if (radiusCircle != null) {
+                    radiusCircle.setCenter(marker.getPosition());
+                }
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                // Конец перетаскивания - обновляем адрес
+                LatLng newPosition = marker.getPosition();
+                String address = getAddressFromLatLng(newPosition);
+                String[] addressParts = splitAddress(address);
+
+                marker.setTitle(addressParts[0]);
+                marker.setSnippet(addressParts[1]);
+                marker.showInfoWindow();
+
+                // Обновляем позицию круга
+                if (radiusCircle != null) {
+                    radiusCircle.setCenter(newPosition);
+                }
             }
         });
     }
 
+    // === КАСТОМНЫЙ АДАПТЕР ДЛЯ INFO WINDOW ===
+    // Этот класс создаёт кастомное окно с информацией о маркере
+    private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+
+        private View mWindow;
+
+        CustomInfoWindowAdapter() {
+            // Инфлейтим наш кастомный layout
+            mWindow = getLayoutInflater().inflate(R.layout.custom_info_window, null);
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+            // Возвращаем null чтобы использовать стандартную рамку
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            // Заполняем наш кастомный layout данными маркера
+            TextView title = mWindow.findViewById(R.id.info_title);
+            TextView snippet = mWindow.findViewById(R.id.info_snippet);
+
+            // Устанавливаем заголовок
+            title.setText(marker.getTitle());
+
+            // Устанавливаем описание
+            snippet.setText(marker.getSnippet());
+
+            return mWindow;
+        }
+    }
+
+    // === ФУНКЦИЯ ДЛЯ РАЗДЕЛЕНИЯ АДРЕСА НА ЧАСТИ ===
+    // Разделяет адрес на заголовок (для title) и полное описание (для snippet)
+    private String[] splitAddress(String fullAddress) {
+        String[] result = new String[2];
+
+        // Разделяем по первому переносу строки
+        String[] parts = fullAddress.split("\n", 2);
+
+        if (parts.length >= 2) {
+            result[0] = parts[0]; // Первая строка - заголовок
+            result[1] = parts[1]; // Остальное - описание
+        } else {
+            result[0] = fullAddress;
+            result[1] = "";
+        }
+
+        return result;
+    }
+
     // === ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ АДРЕСА ПО КООРДИНАТАМ ===
     // Принимает координаты (широта, долгота)
-    // Возвращает читаемый адрес (улица, город, страна)
+    // Возвращает читаемый адрес (остановка, улица, город, страна)
     private String getAddressFromLatLng(LatLng latLng) {
         // Geocoder - класс для преобразования координат в адреса
         Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
@@ -188,21 +349,59 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 // Формируем читаемую строку адреса
                 StringBuilder fullAddress = new StringBuilder();
 
-                // Добавляем название улицы если есть
-                if (address.getThoroughfare() != null) {
-                    fullAddress.append(address.getThoroughfare());
+                // === НАЗВАНИЕ ОСТАНОВКИ / ТОЧКИ ИНТЕРЕСА ===
+                // getFeatureName() возвращает название места (остановка, магазин, парк и т.д.)
+                String featureName = address.getFeatureName();
+                if (featureName != null && !featureName.matches("^\\d.*")) {
+                    // Если название не является просто цифрой (номером дома)
+                    fullAddress.append(featureName);
                 }
 
-                // Добавляем город если есть
-                if (address.getLocality() != null) {
-                    if (fullAddress.length() > 0) fullAddress.append(", ");
-                    fullAddress.append(address.getLocality());
+                // === НОМЕР ДОМА ===
+                // getSubThoroughfare() обычно возвращает номер дома
+                String houseNumber = address.getSubThoroughfare();
+
+                // === НАЗВАНИЕ УЛИЦЫ ===
+                // getThoroughfare() возвращает название улицы
+                String streetName = address.getThoroughfare();
+
+                // Формируем адрес: "Улица, номер дома"
+                if (streetName != null) {
+                    // Если уже есть название остановки, добавляем запятую
+                    if (fullAddress.length() > 0) {
+                        fullAddress.append("\n"); // Перенос на новую строку
+                    }
+
+                    fullAddress.append(streetName);
+
+                    // Добавляем номер дома если есть
+                    if (houseNumber != null) {
+                        fullAddress.append(", ").append(houseNumber);
+                    }
+                } else if (houseNumber != null) {
+                    // Если улицы нет, но номер дома есть
+                    if (fullAddress.length() > 0) {
+                        fullAddress.append("\n");
+                    }
+                    fullAddress.append(houseNumber);
                 }
 
-                // Добавляем страну если есть
-                if (address.getCountryName() != null) {
-                    if (fullAddress.length() > 0) fullAddress.append(", ");
-                    fullAddress.append(address.getCountryName());
+                // === ГОРОД ===
+                String city = address.getLocality();
+                if (city != null) {
+                    if (fullAddress.length() > 0) {
+                        fullAddress.append("\n");
+                    }
+                    fullAddress.append(city);
+                }
+
+                // === СТРАНА ===
+                String country = address.getCountryName();
+                if (country != null) {
+                    if (fullAddress.length() > 0) {
+                        fullAddress.append(", ");
+                    }
+                    fullAddress.append(country);
                 }
 
                 // Возвращаем полный адрес
