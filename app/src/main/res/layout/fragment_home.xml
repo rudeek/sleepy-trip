@@ -1,21 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/lavender"
     tools:context=".HomeFragment">
-
-    <!-- Заголовок -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Мои локации"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:padding="16dp"/>
 
     <!-- Сообщение когда список пуст -->
     <TextView
@@ -23,7 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="100dp"
         android:text="📍 Нет сохранённых локаций\n\nНажмите + чтобы добавить"
         android:textSize="16sp"
         android:textColor="@color/white"
@@ -39,4 +28,12 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
-</LinearLayout>
+    <!-- Кнопки режима удаления -->
+    <include
+        android:id="@+id/delete_mode_buttons"
+        layout="@layout/delete_mode_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

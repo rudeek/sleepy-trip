@@ -8,14 +8,19 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,25 +30,37 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private TextView tvEmptyMessage;
+    private View deleteModeButtons;
+    private Button btnCancelDelete;
+    private Button btnConfirmDelete;
+
     private LocationAdapter adapter;
     private AppDatabase db;
 
-    // Launcher для запроса разрешений
+    // Флаг режима удаления
+    private boolean isDeleteMode = false;
+
+    // Флаг "выбраны все"
+    private boolean isAllSelected = false;
+
+    // MenuItem для галочки
+    private MenuItem selectAllItem;
+
     private ActivityResultLauncher<String[]> permissionLauncher;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Регистрируем launcher для запроса разрешений
+        // Включаем меню в toolbar
+        setHasOptionsMenu(true);
+
         permissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     Boolean fineLocation = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
-                    Boolean backgroundLocation = result.get(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
 
                     if (fineLocation != null && fineLocation) {
-                        // Разрешение получено, запускаем сервис
                         startLocationService();
                     } else {
                         Toast.makeText(requireContext(),
@@ -56,86 +73,177 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Инфлейтим layout
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         // Находим элементы
         recyclerView = view.findViewById(R.id.recycler_locations);
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
+        deleteModeButtons = view.findViewById(R.id.delete_mode_buttons);
+        btnCancelDelete = view.findViewById(R.id.btn_cancel_delete);
+        btnConfirmDelete = view.findViewById(R.id.btn_confirm_delete);
 
-        // Получаем database
         db = AppDatabase.getInstance(requireContext());
 
         // Настраиваем RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // Создаём adapter с обработчиком переключения switch
         adapter = new LocationAdapter((location, isChecked) -> {
-            // Обновляем статус локации в базе данных
             location.setActive(isChecked);
             db.locationDao().update(location);
 
             if (isChecked) {
-                // Локация включена
                 Toast.makeText(requireContext(),
                         "Будильник для \"" + location.getName() + "\" включен",
                         Toast.LENGTH_SHORT).show();
-
-                // Проверяем разрешения и запускаем сервис
                 checkPermissionsAndStartService();
             } else {
-                // Локация выключена
                 Toast.makeText(requireContext(),
                         "Будильник для \"" + location.getName() + "\" выключен",
                         Toast.LENGTH_SHORT).show();
-
-                // Проверяем есть ли ещё активные локации
                 checkAndStopService();
             }
         });
 
         recyclerView.setAdapter(adapter);
 
-        // Загружаем локации
+        // === КНОПКА ОТМЕНЫ ===
+        btnCancelDelete.setOnClickListener(v -> exitDeleteMode());
+
+        // === КНОПКА УДАЛЕНИЯ ===
+        btnConfirmDelete.setOnClickListener(v -> {
+            List<Location> selectedLocations = adapter.getSelectedLocations();
+
+            if (selectedLocations.isEmpty()) {
+                Toast.makeText(requireContext(),
+                        "Выберите локации для удаления",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Удаляем выбранные локации
+            for (Location location : selectedLocations) {
+                db.locationDao().delete(location);
+            }
+
+            Toast.makeText(requireContext(),
+                    "Удалено локаций: " + selectedLocations.size(),
+                    Toast.LENGTH_SHORT).show();
+
+            // Выходим из режима удаления
+            exitDeleteMode();
+
+            // Обновляем список
+            loadLocations();
+        });
+
         loadLocations();
 
         return view;
     }
 
     @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.home_menu, menu);
+        selectAllItem = menu.findItem(R.id.action_select_all);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        // Обновляем список при возврате на фрагмент
         loadLocations();
     }
 
-    // Загрузить локации из базы данных
+    // Войти в режим удаления
+    // Войти в режим удаления
+    private void enterDeleteMode() {
+        isDeleteMode = true;
+        adapter.setDeleteMode(true);
+
+        // Показываем кнопки
+        deleteModeButtons.setVisibility(View.VISIBLE);
+
+        // Скрываем bottom navigation
+        if (getActivity() instanceof MainActivity) {
+            MainActivity activity = (MainActivity) getActivity();
+            activity.binding.bottomAppBar.setVisibility(View.GONE);
+            activity.binding.fabAdd.setVisibility(View.GONE);
+            activity.binding.frameLayout.setPadding(0, 0, 0, 0);
+        }
+    }
+
+    // Выйти из режима удаления
+    private void exitDeleteMode() {
+        isDeleteMode = false;
+        isAllSelected = false;
+        adapter.setDeleteMode(false);
+
+        // Обновляем иконку галочки
+        updateSelectAllIcon();
+
+        // Скрываем кнопки
+        deleteModeButtons.setVisibility(View.GONE);
+
+        // Показываем bottom navigation
+        if (getActivity() instanceof MainActivity) {
+            MainActivity activity = (MainActivity) getActivity();
+            activity.binding.bottomAppBar.setVisibility(View.VISIBLE);
+            activity.binding.fabAdd.setVisibility(View.VISIBLE);
+            activity.binding.frameLayout.post(() -> {
+                int bottomBarHeight = activity.binding.bottomAppBar.getHeight();
+                activity.binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
+            });
+        }
+    }
+
+
+    // Переключить "выбрать все"
+    private void toggleSelectAll() {
+        if (isAllSelected) {
+            adapter.deselectAll();
+            isAllSelected = false;
+        } else {
+            adapter.selectAll();
+            isAllSelected = true;
+        }
+        updateSelectAllIcon();
+    }
+
+    // Выбрать все
+    private void selectAll() {
+        adapter.selectAll();
+        isAllSelected = true;
+        updateSelectAllIcon();
+    }
+
+    // Обновить иконку галочки
+    private void updateSelectAllIcon() {
+        if (selectAllItem != null) {
+            if (isAllSelected) {
+                selectAllItem.setIcon(R.drawable.ic_check_box_checked);
+            } else {
+                selectAllItem.setIcon(R.drawable.ic_check_box_outline);
+            }
+        }
+    }
+
     private void loadLocations() {
-        // Получаем все локации
         List<Location> locations = db.locationDao().getAllLocations();
 
-        // Проверяем пустой ли список
         if (locations.isEmpty()) {
-            // Показываем сообщение о пустом списке
             tvEmptyMessage.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         } else {
-            // Показываем список
             tvEmptyMessage.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-
-            // Обновляем данные в adapter
             adapter.setLocations(locations);
         }
     }
 
-    // Проверяем разрешения и запускаем сервис
     private void checkPermissionsAndStartService() {
-        // Проверяем разрешение на точную геолокацию
         boolean hasFineLocation = ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
-        // Для Android 10+ нужно разрешение на фоновую геолокацию
         boolean hasBackgroundLocation = true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             hasBackgroundLocation = ContextCompat.checkSelfPermission(requireContext(),
@@ -143,10 +251,8 @@ public class HomeFragment extends Fragment {
         }
 
         if (hasFineLocation && hasBackgroundLocation) {
-            // Все разрешения есть - запускаем сервис
             startLocationService();
         } else {
-            // Запрашиваем разрешения
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 permissionLauncher.launch(new String[]{
                         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -160,7 +266,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Запустить сервис отслеживания локации
     private void startLocationService() {
         Intent serviceIntent = new Intent(requireContext(), LocationService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -170,11 +275,9 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Проверяем есть ли активные локации и останавливаем сервис если нет
     private void checkAndStopService() {
         List<Location> locations = db.locationDao().getAllLocations();
 
-        // Проверяем есть ли хоть одна активная локация
         boolean hasActiveLocation = false;
         for (Location location : locations) {
             if (location.isActive()) {
@@ -183,7 +286,6 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        // Если нет активных локаций - останавливаем сервис
         if (!hasActiveLocation) {
             Intent serviceIntent = new Intent(requireContext(), LocationService.class);
             requireContext().stopService(serviceIntent);
@@ -192,5 +294,46 @@ public class HomeFragment extends Fragment {
                     "Отслеживание локаций остановлено",
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_select_all) {
+            // Проверяем есть ли локации
+            if (adapter.getItemCount() == 0) {
+                Toast.makeText(requireContext(),
+                        "Нет локаций для выбора",
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            // Клик по галочке
+            if (!isDeleteMode) {
+                // Если не в режиме удаления - входим в него и выбираем все
+                enterDeleteMode();
+                selectAll();
+            } else {
+                // Если уже в режиме удаления - переключаем выбор всех
+                toggleSelectAll();
+            }
+            return true;
+        } else if (item.getItemId() == R.id.action_delete_mode) {
+            // Проверяем есть ли локации
+            if (adapter.getItemCount() == 0) {
+                Toast.makeText(requireContext(),
+                        "Нет локаций для удаления",
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            // Клик по корзине
+            if (!isDeleteMode) {
+                enterDeleteMode();
+            } else {
+                exitDeleteMode();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

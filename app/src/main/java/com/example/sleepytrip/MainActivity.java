@@ -268,7 +268,13 @@ public class MainActivity extends AppCompatActivity {
                     .withStartAction(() -> binding.fabAdd.setVisibility(View.VISIBLE))
                     .start();
 
-            setToolbarTitle("SleepyTrip");
+            // ДОБАВЬТЕ ЭТО: Добавляем padding снизу для frame_layout
+            binding.frameLayout.post(() -> {
+                int bottomBarHeight = binding.bottomAppBar.getHeight();
+                binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
+            });
+
+            setToolbarTitle("My Locations");
             enableBackButton(false);
         } else {
             // Плавно скрываем
@@ -285,6 +291,8 @@ public class MainActivity extends AppCompatActivity {
                     .setDuration(300)
                     .withEndAction(() -> binding.fabAdd.setVisibility(View.GONE))
                     .start();
+
+            binding.frameLayout.setPadding(0, 0, 0, 0);
 
             // ВАЖНО: Если скрываем bottom navigation, значит это Settings/About
             // Определяем какой заголовок показать
