@@ -2,10 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Разрешения для карт -->
+    <!-- Разрешения для геолокации -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Фоновая геолокация для Android 10+ -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!-- Разрешение на foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+
+    <!-- Разрешение на показ поверх других окон -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <!-- Разрешение на вибрацию -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!-- Разрешение на отключение оптимизации батареи (для стабильной работы) -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -18,10 +34,12 @@
         android:theme="@style/Theme.SleepyTrip"
         tools:targetApi="31">
 
+        <!-- API ключ для Google Maps -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/my_maps_api_key" />
 
+        <!-- MainActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -30,6 +48,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- AlarmActivity - показывается поверх других приложений -->
+        <activity
+            android:name=".AlarmActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:exported="false"/>
+
+        <!-- LocationService - foreground service для отслеживания -->
+        <service
+            android:name=".LocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
 
     </application>
 

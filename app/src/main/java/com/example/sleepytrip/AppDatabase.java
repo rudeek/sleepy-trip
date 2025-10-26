@@ -6,16 +6,13 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {Location.class}, version = 1, exportSchema = false)
+@Database(entities = {Location.class}, version = 2, exportSchema = false)  // version = 2!
 public abstract class AppDatabase extends RoomDatabase {
 
-    // Singleton instance
     private static AppDatabase instance;
 
-    // Абстрактный метод для получения DAO
     public abstract LocationDao locationDao();
 
-    // Получить единственный экземпляр базы данных (Singleton pattern)
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
@@ -23,7 +20,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "sleepytrip_database"
                     )
-                    .allowMainThreadQueries() // ТОЛЬКО для разработки! В продакшене используйте AsyncTask или Coroutines
+                    .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()  // ВАЖНО: пересоздаёт БД при изменении версии
                     .build();
         }
         return instance;

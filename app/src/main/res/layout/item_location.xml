@@ -36,7 +36,7 @@
                 android:id="@+id/tv_location_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Остановка Центральная"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -49,7 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text=""
+                android:text="ул. Пушкина, 15"
                 android:textSize="14sp"
                 android:textColor="#757575"
                 android:maxLines="1"
@@ -61,22 +61,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text=""
+                android:text="📍 Радиус: 500 м"
                 android:textSize="12sp"
                 android:textColor="@color/lavender"/>
 
         </LinearLayout>
 
-        <!-- Кнопка удаления -->
-        <ImageView
-            android:id="@+id/btn_delete_location"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_delete"
-            app:tint="#F44336"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_gravity="center_vertical"/>
+        <!-- Switch для включения/выключения -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            app:thumbTint="@color/white"
+            app:trackTint="@color/lavender"/>
 
     </LinearLayout>
 
