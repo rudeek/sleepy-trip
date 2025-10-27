@@ -48,4 +48,5 @@ dependencies {
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
     implementation libs.play.services.location
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
 }

@@ -13,6 +13,8 @@
     <!-- Разрешение на foreground service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
     <!-- Разрешение на показ поверх других окон -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -20,9 +22,16 @@
     <!-- Разрешение на вибрацию -->
     <uses-permission android:name="android.permission.VIBRATE"/>
 
+    <!-- Для Full Screen Intent (будильник) -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+
     <!-- Разрешение на отключение оптимизации батареи (для стабильной работы) -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
+    <!-- Добавьте эти разрешения -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -49,21 +58,24 @@
             </intent-filter>
         </activity>
 
-        <!-- AlarmActivity - показывается поверх других приложений -->
+        <!-- AlarmActivity с правильными флагами -->
         <activity
             android:name=".AlarmActivity"
             android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTop"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
-            android:exported="false"/>
+            android:exported="false"
+            android:taskAffinity=""
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
 
         <!-- LocationService - foreground service для отслеживания -->
         <service
             android:name=".LocationService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="location"/>
+            android:stopWithTask="false"
+            android:foregroundServiceType="location|dataSync|connectedDevice"/>
 
     </application>
 

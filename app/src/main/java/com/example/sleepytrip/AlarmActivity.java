@@ -1,5 +1,7 @@
 package com.example.sleepytrip;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -21,19 +23,11 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_alarm);
 
-        // Показываем поверх экрана блокировки
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setShowWhenLocked(true);
-            setTurnScreenOn(true);
-        } else {
-            getWindow().addFlags(
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-            );
-        }
+        // КРИТИЧНО: Настраиваем окно ДО setContentView
+        setupWindowFlags();
+
+        setContentView(R.layout.activity_alarm);
 
         // Получаем данные о локации
         String locationName = getIntent().getStringExtra("location_name");
@@ -60,6 +54,28 @@ public class AlarmActivity extends AppCompatActivity {
         });
     }
 
+    // Настройка флагов окна для показа поверх экрана блокировки
+    private void setupWindowFlags() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        }
+
+        getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
+
+        // Для Android 8.0+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+    }
+
     private void playAlarmSound() {
         try {
             Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -67,7 +83,9 @@ public class AlarmActivity extends AppCompatActivity {
                 alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             }
             ringtone = RingtoneManager.getRingtone(this, alarmUri);
-            ringtone.play();
+            if (ringtone != null) {
+                ringtone.play();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,13 +98,12 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void startVibration() {
-        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (vibrator != null && vibrator.hasVibrator()) {
-            // Паттерн вибрации: пауза 0мс, вибрация 500мс, пауза 200мс, вибрация 500мс...
             long[] pattern = {0, 500, 200, 500, 200, 500};
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0)); // 0 = повторять
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
             } else {
                 vibrator.vibrate(pattern, 0);
             }
@@ -106,10 +123,10 @@ public class AlarmActivity extends AppCompatActivity {
         stopVibration();
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
-        // Блокируем кнопку назад - будильник можно остановить только кнопкой
-        // Если хотите разрешить кнопку назад, раскомментируйте:
-        // super.onBackPressed();
+        // Блокируем кнопку назад
     }
+
 }

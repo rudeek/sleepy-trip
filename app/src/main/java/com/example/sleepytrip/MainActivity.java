@@ -6,6 +6,10 @@ import android.view.MenuItem;
 import android.view.View;
 import androidx.appcompat.widget.Toolbar;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -67,6 +71,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Говорим системе, что наш toolbar теперь ActionBar (верхняя панель приложения)
         setSupportActionBar(toolbar);
+
+        // === ЗАПРОС РАЗРЕШЕНИЯ НА УВЕДОМЛЕНИЯ (Android 13+) ===
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                try {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
 
         // === НАСТРОЙКА DRAWER TOGGLE (КНОПКА ГАМБУРГЕРА) ===
 
@@ -390,4 +410,22 @@ public class MainActivity extends AppCompatActivity {
             drawerToggle.syncState();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1001) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Разрешение получено
+                android.util.Log.d("MainActivity", "✅ Разрешение на уведомления получено");
+            } else {
+                // Разрешение отклонено
+                android.util.Log.w("MainActivity", "⚠️ Уведомления отключены пользователем");
+            }
+        }
+    }
+
 }
