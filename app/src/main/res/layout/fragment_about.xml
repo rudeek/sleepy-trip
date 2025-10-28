@@ -107,6 +107,7 @@
             app:cardElevation="4dp"
             android:backgroundTint="@color/white">
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,6 +136,35 @@
                     <TextView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:text="🎨"
+                        android:textSize="24sp"
+                        android:gravity="center"
+                        android:background="@drawable/emoji_circle_background"
+                        android:layout_marginEnd="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Каракальчева Елизавета"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#424242"/>
+
+                </LinearLayout>
+
+                <!-- Карточка участника 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/team_member_background"
+                    android:padding="12dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:text="👩‍💻"
                         android:textSize="24sp"
                         android:gravity="center"
@@ -151,7 +181,7 @@
 
                 </LinearLayout>
 
-                <!-- Карточка участника 2 -->
+                <!-- Карточка участника 3 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -179,6 +209,7 @@
                         android:textColor="#424242"/>
 
                 </LinearLayout>
+
 
                 <TextView
                     android:layout_width="match_parent"
