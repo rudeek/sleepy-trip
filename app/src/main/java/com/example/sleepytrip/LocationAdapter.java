@@ -32,6 +32,17 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         void onSwitchChanged(Location location, boolean isChecked);
     }
 
+    public interface OnSelectionChangeListener {
+        void onSelectionChanged(boolean allSelected, boolean noneSelected);
+    }
+
+    private OnSelectionChangeListener selectionChangeListener;
+
+    public void setOnSelectionChangeListener(OnSelectionChangeListener listener) {
+        this.selectionChangeListener = listener;
+    }
+
+
     public LocationAdapter(OnLocationClickListener listener) {
         this.listener = listener;
     }
@@ -78,7 +89,15 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
                 } else {
                     selectedPositions.remove(position);
                 }
+
+                // Уведомляем фрагмент об изменении выбора
+                if (selectionChangeListener != null) {
+                    boolean allSelected = isAllSelected();
+                    boolean noneSelected = selectedPositions.isEmpty();
+                    selectionChangeListener.onSelectionChanged(allSelected, noneSelected);
+                }
             });
+
 
             // Клик по карточке тоже переключает checkbox
             holder.itemView.setOnClickListener(v -> {
@@ -165,6 +184,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         SwitchMaterial switchLocation;
         CheckBox checkBox;
         ImageView ivIcon;
+
 
         public LocationViewHolder(@NonNull View itemView) {
             super(itemView);

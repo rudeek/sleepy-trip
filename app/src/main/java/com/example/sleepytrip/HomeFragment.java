@@ -24,6 +24,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -105,6 +107,11 @@ public class HomeFragment extends Fragment {
         });
 
         recyclerView.setAdapter(adapter);
+
+        adapter.setOnSelectionChangeListener((allSelected, noneSelected) -> {
+            isAllSelected = allSelected;
+            updateSelectAllIcon();
+        });
 
         // === КНОПКА ОТМЕНЫ ===
         btnCancelDelete.setOnClickListener(v -> exitDeleteMode());
