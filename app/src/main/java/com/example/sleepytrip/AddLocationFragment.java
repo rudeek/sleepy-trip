@@ -3,9 +3,14 @@ package com.example.sleepytrip;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -68,6 +73,81 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         btnCancel = view.findViewById(R.id.btn_cancel);
         sliderRadius = view.findViewById(R.id.slider_radius);
         tvRadiusValue = view.findViewById(R.id.tv_radius_value);
+
+        SearchView searchView = view.findViewById(R.id.search_view);
+
+        int searchSrcTextId = searchView.getContext()
+                .getResources()
+                .getIdentifier("android:id/search_src_text", null, null);
+        EditText searchEditText = searchView.findViewById(searchSrcTextId);
+        searchEditText.setTextColor(Color.parseColor("#939df5"));
+        searchEditText.setHintTextColor(Color.parseColor("#a4adfc"));
+
+        int searchMagIconId = searchView.getContext()
+                .getResources()
+                .getIdentifier("android:id/search_mag_icon", null, null);
+        ImageView searchIcon = searchView.findViewById(searchMagIconId);
+        searchIcon.setColorFilter(Color.parseColor("#8692f7"), PorterDuff.Mode.SRC_IN);
+
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query == null || query.trim().isEmpty()) {
+                    Toast.makeText(getContext(), "Введите адрес", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                // Добавляем "Chisinau, Moldova" для ограничения области поиска
+                String fullQuery = query + ", Chisinau, Moldova";
+                Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
+
+                try {
+                    List<Address> addresses = geocoder.getFromLocationName(fullQuery, 1);
+                    if (addresses != null && !addresses.isEmpty()) {
+                        Address address = addresses.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+                        // Перемещаем камеру к найденному адресу
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+                        // Удаляем старый маркер и круг
+                        if (selectedMarker != null) selectedMarker.remove();
+                        if (radiusCircle != null) radiusCircle.remove();
+
+                        // Создаём новый маркер
+                        selectedMarker = mMap.addMarker(new MarkerOptions()
+                                .position(latLng)
+                                .title(address.getFeatureName() != null ? address.getFeatureName() : query)
+                                .snippet(address.getAddressLine(0))
+                                .draggable(true));
+
+                        // Круг радиуса
+                        radiusCircle = mMap.addCircle(new CircleOptions()
+                                .center(latLng)
+                                .radius(currentRadius)
+                                .strokeColor(Color.parseColor("#8D6E63"))
+                                .strokeWidth(3f)
+                                .fillColor(Color.parseColor("#40D7CCC8")));
+
+                        selectedMarker.showInfoWindow();
+                    } else {
+                        Toast.makeText(getContext(), "Адрес не найден в Кишинёве", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Ошибка при поиске адреса", Toast.LENGTH_SHORT).show();
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Можно добавить автоподсказки позже :)
+                return false;
+            }
+        });
 
         // === ОБРАБОТЧИК СЛАЙДЕРА РАДИУСА ===
         sliderRadius.addOnChangeListener((slider, value, fromUser) -> {

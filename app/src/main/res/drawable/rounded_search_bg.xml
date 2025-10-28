@@ -1,0 +1,7 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFF9FF"/> <!-- очень светло-фиолетовый фон -->
+    <corners android:radius="25dp"/>
+    <stroke android:width="1dp" android:color="#D1B2FF"/> <!-- нежная фиолетовая рамка -->
+</shape>
+

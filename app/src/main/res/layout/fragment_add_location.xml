@@ -7,13 +7,29 @@
     android:background="@color/lavender"
     tools:context=".AddLocationFragment">
 
+    <SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_margin="16dp"
+        android:queryHint="Select location"
+        android:iconifiedByDefault="false"
+        android:background="@drawable/rounded_search_bg"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:elevation="10dp" />
+
+
+
     <!-- Google Maps Fragment -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/search_view"
         android:layout_above="@id/radius_container"/>
+
 
     <!-- Контейнер для настройки радиуса -->
     <LinearLayout
