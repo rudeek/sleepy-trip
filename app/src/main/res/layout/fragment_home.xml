@@ -28,12 +28,52 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
-    <!-- Кнопки режима удаления -->
-    <include
-        android:id="@+id/delete_mode_buttons"
-        layout="@layout/delete_mode_buttons"
+    <!-- Кнопки режима удаления (как BottomAppBar) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/delete_mode_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"/>
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="0dp"
+        android:backgroundTint="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center">
+
+            <!-- Кнопка отмены -->
+            <Button
+                android:id="@+id/btn_cancel_delete"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Отмена"
+                android:textSize="16sp"
+                android:backgroundTint="#757575"
+                android:textColor="@color/white"
+                app:cornerRadius="12dp"/>
+
+            <!-- Кнопка удаления -->
+            <Button
+                android:id="@+id/btn_confirm_delete"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Удалить"
+                android:textSize="16sp"
+                android:backgroundTint="#F44336"
+                android:textColor="@color/white"
+                app:cornerRadius="12dp"/>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

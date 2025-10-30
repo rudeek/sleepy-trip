@@ -9,11 +9,13 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
@@ -32,7 +35,6 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private TextView tvEmptyMessage;
-    private View deleteModeButtons;
     private Button btnCancelDelete;
     private Button btnConfirmDelete;
 
@@ -80,7 +82,9 @@ public class HomeFragment extends Fragment {
         // Находим элементы
         recyclerView = view.findViewById(R.id.recycler_locations);
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
-        deleteModeButtons = view.findViewById(R.id.delete_mode_buttons);
+
+        // ⭐ Обновите эти строки
+        View deleteModeBar = view.findViewById(R.id.delete_mode_bottom_bar);
         btnCancelDelete = view.findViewById(R.id.btn_cancel_delete);
         btnConfirmDelete = view.findViewById(R.id.btn_confirm_delete);
 
@@ -162,19 +166,52 @@ public class HomeFragment extends Fragment {
     }
 
     // Войти в режим удаления
-    // Войти в режим удаления
     private void enterDeleteMode() {
         isDeleteMode = true;
         adapter.setDeleteMode(true);
 
-        // Показываем кнопки
-        deleteModeButtons.setVisibility(View.VISIBLE);
+        // Получаем ссылку на delete bar
+        View deleteBar = getView().findViewById(R.id.delete_mode_bottom_bar);
 
-        // Скрываем bottom navigation
+        // Показываем delete bar с анимацией снизу вверх
+        deleteBar.setVisibility(View.VISIBLE);
+        deleteBar.setTranslationY(deleteBar.getHeight()); // Начальная позиция - за экраном
+        deleteBar.animate()
+                .translationY(0) // Конечная позиция - на месте
+                .setDuration(300)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+
+        // Добавляем padding снизу для RecyclerView после анимации
+        deleteBar.post(() -> {
+            int deleteBarHeight = deleteBar.getHeight();
+            recyclerView.setPadding(
+                    recyclerView.getPaddingLeft(),
+                    recyclerView.getPaddingTop(),
+                    recyclerView.getPaddingRight(),
+                    deleteBarHeight + 8 // +8dp для отступа
+            );
+        });
+
+        // Скрываем bottom navigation с анимацией
         if (getActivity() instanceof MainActivity) {
             MainActivity activity = (MainActivity) getActivity();
-            activity.binding.bottomAppBar.setVisibility(View.GONE);
-            activity.binding.fabAdd.setVisibility(View.GONE);
+
+            activity.binding.bottomAppBar.animate()
+                    .alpha(0f)
+                    .translationY(activity.binding.bottomAppBar.getHeight())
+                    .setDuration(300)
+                    .withEndAction(() -> activity.binding.bottomAppBar.setVisibility(View.GONE))
+                    .start();
+
+            activity.binding.fabAdd.animate()
+                    .alpha(0f)
+                    .scaleX(0f)
+                    .scaleY(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> activity.binding.fabAdd.setVisibility(View.GONE))
+                    .start();
+
             activity.binding.frameLayout.setPadding(0, 0, 0, 0);
         }
     }
@@ -185,23 +222,52 @@ public class HomeFragment extends Fragment {
         isAllSelected = false;
         adapter.setDeleteMode(false);
 
-        // Обновляем иконку галочки
         updateSelectAllIcon();
 
-        // Скрываем кнопки
-        deleteModeButtons.setVisibility(View.GONE);
+        View deleteBar = getView().findViewById(R.id.delete_mode_bottom_bar);
 
-        // Показываем bottom navigation
+        // DeleteBar уезжает СВЕРХУ ВНИЗ
+        deleteBar.animate()
+                .translationY(deleteBar.getHeight()) // Уезжает вниз
+                .setDuration(300)
+                .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                .withEndAction(() -> deleteBar.setVisibility(View.GONE))
+                .start();
+
+        recyclerView.setPadding(
+                recyclerView.getPaddingLeft(),
+                recyclerView.getPaddingTop(),
+                recyclerView.getPaddingRight(),
+                0
+        );
+
         if (getActivity() instanceof MainActivity) {
             MainActivity activity = (MainActivity) getActivity();
+
+            // BottomAppBar появляется СНИЗУ ВВЕРХ
             activity.binding.bottomAppBar.setVisibility(View.VISIBLE);
+            activity.binding.bottomAppBar.setAlpha(0f);
+            activity.binding.bottomAppBar.setTranslationY(activity.binding.bottomAppBar.getHeight()); // Начинается снизу
+            activity.binding.bottomAppBar.animate()
+                    .alpha(1f)
+                    .translationY(0) // Поднимается на свою позицию
+                    .setDuration(300)
+                    .start();
+
+            // Просто показываем FAB
             activity.binding.fabAdd.setVisibility(View.VISIBLE);
+            activity.binding.fabAdd.setAlpha(1f);
+            activity.binding.fabAdd.setScaleX(1f);
+            activity.binding.fabAdd.setScaleY(1f);
+
+            // Восстанавливаем отступ снизу
             activity.binding.frameLayout.post(() -> {
                 int bottomBarHeight = activity.binding.bottomAppBar.getHeight();
                 activity.binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
             });
         }
     }
+
 
 
     // Переключить "выбрать все"
