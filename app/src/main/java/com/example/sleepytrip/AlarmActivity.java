@@ -99,42 +99,32 @@ public class AlarmActivity extends AppCompatActivity {
     private void disableLocation() {
         new Thread(() -> {
             try {
-                android.util.Log.d("AlarmActivity", "🔍 Начинаем поиск локации: " + locationName);
+                // Получаем ID из Intent
+                final int locationId = getIntent().getIntExtra("location_id", -1);
 
-                // Ищем локацию по имени и адресу
-                List<Location> allLocations = db.locationDao().getAllLocations();
-                android.util.Log.d("AlarmActivity", "📋 Всего локаций в БД: " + allLocations.size());
-
-                Location targetLocation = null;
-                for (Location location : allLocations) {
-                    android.util.Log.d("AlarmActivity", "🔎 Проверяем: " + location.getName() +
-                            " (ID: " + location.getId() + ", Active: " + location.isActive() + ")");
-
-                    if (location.getName().equals(locationName) &&
-                            location.getAddress().equals(locationAddress)) {
-                        targetLocation = location;
-                        android.util.Log.d("AlarmActivity", "✅ Нашли целевую локацию! ID: " + location.getId());
-                        break;
-                    }
+                if (locationId == -1) {
+                    Log.e("AlarmActivity", "❌ location_id не найден в Intent!");
+                    runOnUiThread(() -> {
+                        Toast.makeText(AlarmActivity.this,
+                                "Ошибка: ID локации не найден",
+                                Toast.LENGTH_SHORT).show();
+                    });
+                    return;
                 }
 
+                Log.d("AlarmActivity", "🔍 Отключаем локацию ID=" + locationId);
+
+                // Получаем локацию по ID
+                com.example.sleepytrip.Location targetLocation = db.locationDao().getLocationById(locationId);
+
                 if (targetLocation != null) {
-                    android.util.Log.d("AlarmActivity", "🔧 Выключаем локацию ID: " + targetLocation.getId());
+                    Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
 
                     // Выключаем локацию
                     targetLocation.setActive(false);
                     db.locationDao().update(targetLocation);
 
-                    android.util.Log.d("AlarmActivity", "✅ Локация обновлена в БД");
-
-                    // ВАЖНО: Уведомляем LocationService о выключении
-                    final int locationId = targetLocation.getId();
-                    runOnUiThread(() -> {
-                        Intent intent = new Intent("com.example.sleepytrip.LOCATION_DISABLED");
-                        intent.putExtra("location_id", locationId);
-                        sendBroadcast(intent);
-                        android.util.Log.d("AlarmActivity", "📡 Отправлен broadcast для ID: " + locationId);
-                    });
+                    Log.d("AlarmActivity", "✅ Локация обновлена в БД");
 
                     // Показываем toast на главном потоке
                     final String name = targetLocation.getName();
@@ -144,10 +134,15 @@ public class AlarmActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     });
                 } else {
-                    android.util.Log.e("AlarmActivity", "❌ Локация НЕ НАЙДЕНА!");
+                    Log.e("AlarmActivity", "❌ Локация ID=" + locationId + " НЕ НАЙДЕНА в БД!");
+                    runOnUiThread(() -> {
+                        Toast.makeText(AlarmActivity.this,
+                                "Ошибка: локация не найдена",
+                                Toast.LENGTH_SHORT).show();
+                    });
                 }
             } catch (Exception e) {
-                android.util.Log.e("AlarmActivity", "❌ ОШИБКА: " + e.getMessage(), e);
+                Log.e("AlarmActivity", "❌ ОШИБКА disableLocation: " + e.getMessage(), e);
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(AlarmActivity.this,
@@ -245,13 +240,22 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        int locationId = getIntent().getIntExtra("LOCATION_ID", -1);
+
+        // Получаем ID локации из Intent
+        int locationId = getIntent().getIntExtra("location_id", -1);
+
         if (locationId != -1) {
-            Log.d("AlarmActivity", "🧹 onDestroy: сбрасываю локацию " + locationId);
+            Log.d("AlarmActivity", "🧹 onDestroy: сбрасываю локацию ID=" + locationId);
+
+            // Отправляем broadcast для очистки triggeredAlarms
             Intent resetIntent = new Intent("LOCATION_RESET");
             resetIntent.setPackage(getPackageName());
             resetIntent.putExtra("LOCATION_ID", locationId);
             sendBroadcast(resetIntent);
+
+            Log.d("AlarmActivity", "📡 Broadcast LOCATION_RESET отправлен для ID=" + locationId);
+        } else {
+            Log.w("AlarmActivity", "⚠️ location_id не найден в Intent!");
         }
     }
 

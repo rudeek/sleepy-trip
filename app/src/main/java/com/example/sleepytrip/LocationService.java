@@ -60,8 +60,22 @@ public class LocationService extends Service {
         public void onReceive(Context context, Intent intent) {
             if ("LOCATION_RESET".equals(intent.getAction())) {
                 int locationId = intent.getIntExtra("LOCATION_ID", -1);
-                triggeredAlarms.remove(locationId);
-                Log.d("LocationService", "✅ Сброшен статус локации " + locationId);
+
+                if (locationId != -1) {
+                    // ⭐ Удаляем из triggeredAlarms
+                    Boolean wasRemoved = triggeredAlarms.remove(locationId);
+
+                    if (wasRemoved != null) {
+                        Log.d("LocationService", "✅ Сброшен статус локации ID=" + locationId + " (было: " + wasRemoved + ")");
+                    } else {
+                        Log.w("LocationService", "⚠️ Локация ID=" + locationId + " не найдена в triggeredAlarms");
+                    }
+
+                    // Логируем текущее состояние
+                    Log.d("LocationService", "📊 Активных будильников: " + triggeredAlarms.size());
+                } else {
+                    Log.e("LocationService", "❌ LOCATION_ID не передан в broadcast!");
+                }
             }
         }
     };
@@ -69,9 +83,11 @@ public class LocationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // ⭐ Регистрируем BroadcastReceiver
         IntentFilter filter = new IntentFilter("LOCATION_RESET");
         registerReceiver(resetReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-
+        Log.d("LocationService", "✅ BroadcastReceiver зарегистрирован");
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         db = AppDatabase.getInstance(this);
@@ -292,6 +308,7 @@ public class LocationService extends Service {
         Intent fullScreenIntent = new Intent(this, AlarmActivity.class);
         fullScreenIntent.putExtra("location_name", location.getName());
         fullScreenIntent.putExtra("location_address", location.getAddress());
+        fullScreenIntent.putExtra("location_id", location.getId()); // ⭐ ДОБАВЬТЕ ID
         fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(
@@ -325,11 +342,12 @@ public class LocationService extends Service {
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("location_name", location.getName());
             intent.putExtra("location_address", location.getAddress());
+            intent.putExtra("location_id", location.getId()); // ⭐ ДОБАВЬТЕ ID
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                     Intent.FLAG_ACTIVITY_CLEAR_TASK |
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             startActivity(intent);
-            Log.d("LocationService", "✅ AlarmActivity запущена");
+            Log.d("LocationService", "✅ AlarmActivity запущена с ID: " + location.getId());
         } catch (Exception e) {
             Log.e("LocationService", "❌ Ошибка запуска AlarmActivity: " + e.getMessage());
             e.printStackTrace();
@@ -396,21 +414,36 @@ public class LocationService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        // Останавливаем периодические обновления
+        // ⭐ КРИТИЧНО: Отписка от BroadcastReceiver
+        try {
+            unregisterReceiver(resetReceiver);
+            Log.d("LocationService", "✅ BroadcastReceiver отписан");
+        } catch (IllegalArgumentException e) {
+            Log.w("LocationService", "⚠️ Receiver уже был отписан");
+        }
+
+        // Останавливаем периодические обновления notification
         if (notificationUpdateHandler != null && notificationUpdateRunnable != null) {
             notificationUpdateHandler.removeCallbacks(notificationUpdateRunnable);
+            Log.d("LocationService", "✅ Notification updates остановлены");
         }
 
+        // Останавливаем отслеживание геолокации
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
+            Log.d("LocationService", "✅ Location updates остановлены");
         }
 
+        // Освобождаем WakeLock
         if (wakeLock != null && wakeLock.isHeld()) {
             wakeLock.release();
+            Log.d("LocationService", "✅ WakeLock освобождён");
         }
 
-        // Очищаем triggered alarms при остановке сервиса
+        // Очищаем triggered alarms
         triggeredAlarms.clear();
+
+        Log.d("LocationService", "🛑 LocationService полностью уничтожен");
     }
 
     @Nullable
