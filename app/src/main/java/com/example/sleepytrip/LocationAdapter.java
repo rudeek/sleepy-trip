@@ -63,12 +63,10 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         holder.tvAddress.setText(location.getAddress());
 
         // Форматируем радиус
-        String radiusText;
-        if (location.getRadius() >= 1000) {
-            radiusText = String.format("📍 Радиус: %.1f км", location.getRadius() / 1000);
-        } else {
-            radiusText = String.format("📍 Радиус: %.0f м", location.getRadius());
-        }
+        String radiusText = "📍 Радиус: " + SettingsFragment.formatDistance(
+                holder.itemView.getContext(),
+                location.getRadius()
+        );
         holder.tvRadius.setText(radiusText);
 
         // === РЕЖИМ УДАЛЕНИЯ ===
