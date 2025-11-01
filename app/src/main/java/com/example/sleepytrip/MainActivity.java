@@ -1,13 +1,22 @@
 package com.example.sleepytrip;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.widget.Toast;
+
 import androidx.core.app.ActivityCompat;
 
 import androidx.activity.OnBackPressedCallback;
@@ -83,6 +92,18 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, 123);
+
+                Toast.makeText(this,
+                        "Для работы будильника разрешите показ поверх других окон",
+                        Toast.LENGTH_LONG).show();
             }
         }
 

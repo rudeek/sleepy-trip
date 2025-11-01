@@ -1,6 +1,7 @@
 package com.example.sleepytrip;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -54,12 +55,15 @@ public class AlarmActivity extends AppCompatActivity {
         tvAlarmTitle.setText("🔔 Вы прибыли!");
         tvAlarmMessage.setText(locationName + "\n" + locationAddress);
 
-        // Запускаем рингтон и вибрацию
+        // Запускаем рингтон и вибрацию (дополнительно, на случай если сервис не запустил)
         playAlarmSound();
         startVibration();
 
         // Кнопка остановки будильника
         btnStopAlarm.setOnClickListener(v -> {
+            // ⭐ Останавливаем звук и вибрацию В СЕРВИСЕ
+            stopServiceAlarm();
+
             stopAlarmSound();
             stopVibration();
 
@@ -92,6 +96,18 @@ public class AlarmActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getWindow().getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Останавливаем звук и вибрацию в сервисе
+    private void stopServiceAlarm() {
+        try {
+            Intent stopIntent = new Intent("STOP_ALARM");
+            stopIntent.setPackage(getPackageName());
+            sendBroadcast(stopIntent);
+            Log.d("AlarmActivity", "📡 Отправлен broadcast STOP_ALARM");
+        } catch (Exception e) {
+            Log.e("AlarmActivity", "❌ Ошибка отправки broadcast: " + e.getMessage());
         }
     }
 
@@ -236,10 +252,13 @@ public class AlarmActivity extends AppCompatActivity {
         }
     }
 
-    // В AlarmActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // ⭐ КРИТИЧНО: Останавливаем звук и вибрацию при закрытии
+        stopAlarmSound();
+        stopVibration();
 
         // Получаем ID локации из Intent
         int locationId = getIntent().getIntExtra("location_id", -1);
@@ -258,8 +277,6 @@ public class AlarmActivity extends AppCompatActivity {
             Log.w("AlarmActivity", "⚠️ location_id не найден в Intent!");
         }
     }
-
-
 
     @SuppressLint("MissingSuperCall")
     @Override
