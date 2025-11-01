@@ -15,7 +15,7 @@ public class Location {
     private double longitude;     // Долгота
     private float radius;         // Радиус в метрах
     private long timestamp;       // Дата добавления
-    private boolean isActive;     // Включена ли локация (НОВОЕ!)
+    private boolean isActive;     // Включена ли локация
 
     // Конструктор
     public Location(String name, String address, double latitude, double longitude, float radius) {
@@ -28,7 +28,6 @@ public class Location {
         this.isActive = false;  // По умолчанию выключена
     }
 
-    // Все существующие геттеры и сеттеры...
 
     public boolean isActive() {
         return isActive;
