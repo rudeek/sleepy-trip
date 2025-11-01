@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 
 import android.widget.EditText;
@@ -24,6 +25,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,12 +56,23 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
     // Радиус ВСЕГДА хранится в метрах (внутренний формат)
     private float currentRadiusMeters = 500f;
 
+    // ⭐ НОВОЕ: Клиент для получения текущей локации
+    private FusedLocationProviderClient fusedLocationClient;
+
+    // ⭐ НОВОЕ: Текущее местоположение пользователя
+    private LatLng currentUserLocation;
+    private String currentCity = "Chisinau";  // Дефолтный город
+    private String currentCountry = "Moldova"; // Дефолтная страна
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_location, container, false);
+
+        // ⭐ НОВОЕ: Инициализируем FusedLocationProviderClient
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         btnAddLocation = view.findViewById(R.id.btn_add_location);
         btnCancel = view.findViewById(R.id.btn_cancel);
@@ -91,42 +105,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                     return false;
                 }
 
-                String fullQuery = query + ", Chisinau, Moldova";
-                Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
-
-                try {
-                    List<Address> addresses = geocoder.getFromLocationName(fullQuery, 1);
-                    if (addresses != null && !addresses.isEmpty()) {
-                        Address address = addresses.get(0);
-                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-
-                        if (selectedMarker != null) selectedMarker.remove();
-                        if (radiusCircle != null) radiusCircle.remove();
-
-                        selectedMarker = mMap.addMarker(new MarkerOptions()
-                                .position(latLng)
-                                .title(address.getFeatureName() != null ? address.getFeatureName() : query)
-                                .snippet(address.getAddressLine(0))
-                                .draggable(true));
-
-                        radiusCircle = mMap.addCircle(new CircleOptions()
-                                .center(latLng)
-                                .radius(currentRadiusMeters)
-                                .strokeColor(Color.parseColor("#8D6E63"))
-                                .strokeWidth(3f)
-                                .fillColor(Color.parseColor("#40D7CCC8")));
-
-                        selectedMarker.showInfoWindow();
-                    } else {
-                        Toast.makeText(getContext(), "Адрес не найден в Кишинёве", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), "Ошибка при поиске адреса", Toast.LENGTH_SHORT).show();
-                }
-
+                performSmartSearch(query);
                 return false;
             }
 
@@ -178,7 +157,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 String fullAddress = addressParts[1].isEmpty() ? address : addressParts[1];
 
                 // Сохраняем радиус ВСЕГДА В МЕТРАХ
-                Location location = new Location(
+                com.example.sleepytrip.Location location = new com.example.sleepytrip.Location(
                         locationName,
                         fullAddress,
                         position.latitude,
@@ -206,6 +185,220 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         return view;
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Умный поиск с приоритетами
+    private void performSmartSearch(String query) {
+        Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
+
+        try {
+            // ШАГ 1: Ищем БЕЗ привязки к стране (глобальный поиск)
+            List<Address> globalResults = geocoder.getFromLocationName(query, 10);
+
+            if (globalResults == null || globalResults.isEmpty()) {
+                Toast.makeText(getContext(), "Адрес не найден", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // ШАГ 2: Анализируем результаты и выбираем лучший
+            Address bestMatch = findBestMatch(globalResults, query);
+
+            if (bestMatch != null) {
+                showLocationOnMap(bestMatch, query);
+            } else {
+                Toast.makeText(getContext(), "Адрес не найден", Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Ошибка при поиске адреса", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Выбираем лучшее совпадение из результатов
+    private Address findBestMatch(List<Address> addresses, String query) {
+        if (addresses == null || addresses.isEmpty()) {
+            return null;
+        }
+
+        String queryLower = query.toLowerCase().trim();
+
+        // Список результатов с приоритетами
+        Address sameCountryMatch = null;     // Совпадение в той же стране
+        Address sameCityMatch = null;        // Совпадение в том же городе
+        Address majorCityMatch = null;       // Крупный город (явно другая страна)
+        Address firstResult = addresses.get(0); // Первый результат как fallback
+
+        for (Address addr : addresses) {
+            String addrCountry = addr.getCountryName();
+            String addrCity = addr.getLocality();
+            String addrAdminArea = addr.getAdminArea(); // Регион/область
+
+            // Проверяем совпадение города в запросе
+            boolean queryContainsCity = false;
+            if (addrCity != null) {
+                queryContainsCity = queryLower.contains(addrCity.toLowerCase());
+            }
+
+            // Проверяем совпадение региона в запросе
+            boolean queryContainsRegion = false;
+            if (addrAdminArea != null) {
+                queryContainsRegion = queryLower.contains(addrAdminArea.toLowerCase());
+            }
+
+            // ПРИОРИТЕТ 1: Тот же город (самый высокий)
+            if (addrCity != null && addrCity.equalsIgnoreCase(currentCity)) {
+                if (sameCityMatch == null) {
+                    sameCityMatch = addr;
+                }
+            }
+
+            // ПРИОРИТЕТ 2: Та же страна (средний)
+            if (addrCountry != null && addrCountry.equalsIgnoreCase(currentCountry)) {
+                if (sameCountryMatch == null) {
+                    sameCountryMatch = addr;
+                }
+
+                // Если запрос содержит название города - это более точное совпадение
+                if (queryContainsCity || queryContainsRegion) {
+                    return addr; // Возвращаем сразу
+                }
+            }
+
+            // ПРИОРИТЕТ 3: Крупный город в другой стране (если запрос содержит его название)
+            if (queryContainsCity && addrCity != null && !addrCity.equalsIgnoreCase(currentCity)) {
+                if (majorCityMatch == null) {
+                    majorCityMatch = addr;
+                }
+            }
+        }
+
+        // Логика выбора результата:
+
+        // 1. Если нашли в текущем городе - берем это
+        if (sameCityMatch != null) {
+            android.util.Log.d("SmartSearch", "✅ Найдено в текущем городе: " + currentCity);
+            return sameCityMatch;
+        }
+
+        // 2. Если в запросе явно указан другой город - берем его
+        if (majorCityMatch != null) {
+            android.util.Log.d("SmartSearch", "✅ Найден указанный город: " + majorCityMatch.getLocality());
+            return majorCityMatch;
+        }
+
+        // 3. Если нашли в текущей стране - берем это
+        if (sameCountryMatch != null) {
+            android.util.Log.d("SmartSearch", "✅ Найдено в текущей стране: " + currentCountry);
+            return sameCountryMatch;
+        }
+
+        // 4. Если ничего не подошло - берем первый результат
+        android.util.Log.d("SmartSearch", "⚠️ Используем первый результат");
+        return firstResult;
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Показываем локацию на карте
+    private void showLocationOnMap(Address address, String originalQuery) {
+        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+        // Определяем zoom в зависимости от типа результата
+        float zoomLevel = 15f; // Дефолт для улиц/адресов
+
+        if (address.getLocality() != null &&
+                (originalQuery.equalsIgnoreCase(address.getLocality()) ||
+                        originalQuery.toLowerCase().contains(address.getLocality().toLowerCase()))) {
+            // Если искали город - зум меньше
+            zoomLevel = 12f;
+        }
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
+
+        if (selectedMarker != null) selectedMarker.remove();
+        if (radiusCircle != null) radiusCircle.remove();
+
+        String title = address.getFeatureName() != null ? address.getFeatureName() : originalQuery;
+        String snippet = address.getAddressLine(0);
+
+        selectedMarker = mMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title(title)
+                .snippet(snippet)
+                .draggable(true));
+
+        radiusCircle = mMap.addCircle(new CircleOptions()
+                .center(latLng)
+                .radius(currentRadiusMeters)
+                .strokeColor(Color.parseColor("#8D6E63"))
+                .strokeWidth(3f)
+                .fillColor(Color.parseColor("#40D7CCC8")));
+
+        selectedMarker.showInfoWindow();
+
+        // Логируем результат
+        android.util.Log.d("SmartSearch",
+                "📍 Показан результат: " + title + " (" +
+                        address.getLocality() + ", " + address.getCountryName() + ")");
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Получаем текущую локацию пользователя
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(requireActivity(), location -> {
+                    if (location != null) {
+                        currentUserLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        // Определяем город и страну
+                        updateCityAndCountry(location);
+
+                        android.util.Log.d("AddLocationFragment",
+                                "📍 Текущая локация: " + currentCity + ", " + currentCountry);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("AddLocationFragment", "❌ Не удалось получить локацию: " + e.getMessage());
+                });
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Определяем город и страну по координатам
+    private void updateCityAndCountry(Location location) {
+        Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
+
+        try {
+            List<Address> addresses = geocoder.getFromLocation(
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    1
+            );
+
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+
+                // Получаем город
+                String locality = address.getLocality();
+                if (locality != null && !locality.isEmpty()) {
+                    currentCity = locality;
+                } else {
+                    // Если locality пустой, пробуем subAdminArea
+                    String subAdminArea = address.getSubAdminArea();
+                    if (subAdminArea != null && !subAdminArea.isEmpty()) {
+                        currentCity = subAdminArea;
+                    }
+                }
+
+                // Получаем страну
+                String country = address.getCountryName();
+                if (country != null && !country.isEmpty()) {
+                    currentCountry = country;
+                }
+            }
+        } catch (IOException e) {
+            android.util.Log.e("AddLocationFragment", "❌ Ошибка геокодинга: " + e.getMessage());
+        }
+    }
 
     // === НАСТРОЙКА СЛАЙДЕРА (УНИВЕРСАЛЬНАЯ ВЕРСИЯ) ===
     private void setupSlider() {
@@ -224,40 +417,47 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         tvRadiusValue.setText(SettingsFragment.formatDistance(requireContext(), currentRadiusMeters));
     }
 
-    // === КОНВЕРТАЦИЯ ЗНАЧЕНИЯ СЛАЙДЕРА В МЕТРЫ ===
-    private float convertSliderValueToMeters(float sliderValue) {
-        String units = SettingsFragment.getUnits(requireContext());
-
-        if ("miles".equals(units)) {
-            // Слайдер в футах -> конвертируем в метры
-            return sliderValue / 3.28084f;
-        } else {
-            // Слайдер уже в метрах
-            return sliderValue;
-        }
-    }
-
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
-        LatLng chisinau = new LatLng(47.0105, 28.8638);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
+        // ⭐ ИЗМЕНЕНО: Получаем текущую локацию перед показом карты
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            // Получаем текущую локацию
+            getCurrentLocation();
+
+            mMap.setMyLocationEnabled(true);
+
+            // Центрируем карту на текущей позиции
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(requireActivity(), location -> {
+                        if (location != null) {
+                            LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+                        } else {
+                            // Если не удалось получить локацию, используем дефолтную (Кишинёв)
+                            LatLng chisinau = new LatLng(47.0105, 28.8638);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
+                        }
+                    });
+        } else {
+            // Запрашиваем разрешение
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+
+            // Показываем дефолтную локацию (Кишинёв)
+            LatLng chisinau = new LatLng(47.0105, 28.8638);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
+        }
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
-        } else {
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
 
         mMap.setOnMapClickListener(latLng -> {
             if (selectedMarker != null) {
@@ -435,6 +635,16 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 if (ContextCompat.checkSelfPermission(requireContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     mMap.setMyLocationEnabled(true);
+                    getCurrentLocation();
+
+                    // Центрируем карту на текущей позиции
+                    fusedLocationClient.getLastLocation()
+                            .addOnSuccessListener(requireActivity(), location -> {
+                                if (location != null) {
+                                    LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+                                }
+                            });
                 }
             } else {
                 Toast.makeText(getContext(),
