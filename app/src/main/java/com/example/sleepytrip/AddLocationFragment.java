@@ -41,34 +41,25 @@ import java.util.Locale;
 
 public class AddLocationFragment extends Fragment implements OnMapReadyCallback {
 
-    // Элементы интерфейса
     private Button btnAddLocation;
     private Button btnCancel;
     private Slider sliderRadius;
     private TextView tvRadiusValue;
 
-    // Google Map объект
     private GoogleMap mMap;
-
-    // Маркер который пользователь устанавливает на карте
     private Marker selectedMarker;
-
-    // Круг радиуса вокруг маркера
     private Circle radiusCircle;
 
-    // Текущий радиус в метрах (по умолчанию 500м)
-    private float currentRadius = 500f;
+    // Радиус ВСЕГДА хранится в метрах (внутренний формат)
+    private float currentRadiusMeters = 500f;
 
-    // Код запроса разрешения на геолокацию
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Инфлейтим (создаём) view из XML layout
         View view = inflater.inflate(R.layout.fragment_add_location, container, false);
 
-        // Находим элементы в layout
         btnAddLocation = view.findViewById(R.id.btn_add_location);
         btnCancel = view.findViewById(R.id.btn_cancel);
         sliderRadius = view.findViewById(R.id.slider_radius);
@@ -89,6 +80,8 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         ImageView searchIcon = searchView.findViewById(searchMagIconId);
         searchIcon.setColorFilter(Color.parseColor("#8692f7"), PorterDuff.Mode.SRC_IN);
 
+        // === НАСТРОЙКА СЛАЙДЕРА В ЗАВИСИМОСТИ ОТ ЕДИНИЦ ИЗМЕРЕНИЯ ===
+        setupSlider();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -98,7 +91,6 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                     return false;
                 }
 
-                // Добавляем "Chisinau, Moldova" для ограничения области поиска
                 String fullQuery = query + ", Chisinau, Moldova";
                 Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
 
@@ -108,24 +100,20 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                         Address address = addresses.get(0);
                         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                        // Перемещаем камеру к найденному адресу
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
 
-                        // Удаляем старый маркер и круг
                         if (selectedMarker != null) selectedMarker.remove();
                         if (radiusCircle != null) radiusCircle.remove();
 
-                        // Создаём новый маркер
                         selectedMarker = mMap.addMarker(new MarkerOptions()
                                 .position(latLng)
                                 .title(address.getFeatureName() != null ? address.getFeatureName() : query)
                                 .snippet(address.getAddressLine(0))
                                 .draggable(true));
 
-                        // Круг радиуса
                         radiusCircle = mMap.addCircle(new CircleOptions()
                                 .center(latLng)
-                                .radius(currentRadius)
+                                .radius(currentRadiusMeters)
                                 .strokeColor(Color.parseColor("#8D6E63"))
                                 .strokeWidth(3f)
                                 .fillColor(Color.parseColor("#40D7CCC8")));
@@ -144,42 +132,32 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Можно добавить автоподсказки позже :)
                 return false;
             }
         });
 
         // === ОБРАБОТЧИК СЛАЙДЕРА РАДИУСА ===
         sliderRadius.addOnChangeListener((slider, value, fromUser) -> {
-            // Обновляем текущий радиус
-            currentRadius = value;
+            // Значение = метры
+            currentRadiusMeters = value;
 
-            // Обновляем текст с значением радиуса
-            if (value >= 1000) {
-                // Если больше 1000м, показываем в километрах
-                tvRadiusValue.setText(String.format("%.1f км", value / 1000));
-            } else {
-                // Иначе показываем в метрах
-                tvRadiusValue.setText(String.format("%.0f м", value));
-            }
+            // Обновляем текст
+            updateRadiusText();
 
-            // Обновляем круг на карте если маркер установлен
+            // Обновляем круг
             if (radiusCircle != null && selectedMarker != null) {
-                radiusCircle.setRadius(currentRadius);
+                radiusCircle.setRadius(currentRadiusMeters);
             }
         });
 
-        // Получаем SupportMapFragment из layout
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
 
-        // Асинхронно загружаем карту
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        // === ОБРАБОТЧИК КНОПКИ CANCEL ===
-        // Возвращаемся на главную страницу без сохранения
+        // === КНОПКА CANCEL ===
         btnCancel.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 MainActivity activity = (MainActivity) getActivity();
@@ -187,55 +165,38 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
             }
         });
 
-        // === ОБРАБОТЧИК КНОПКИ ADD LOCATION ===
-        // Сохраняем выбранную локацию
+        // === КНОПКА ADD LOCATION ===
         btnAddLocation.setOnClickListener(v -> {
-            // Проверяем что пользователь установил маркер
             if (selectedMarker != null) {
-                // Получаем координаты маркера
                 LatLng position = selectedMarker.getPosition();
-
-                // Получаем адрес по координатам
                 String address = getAddressFromLatLng(position);
 
-                // Показываем уведомление с адресом и радиусом
-                Toast.makeText(getContext(),
-                        "Location saved: " + address + "\nRadius: " + (int)currentRadius + "m",
-                        Toast.LENGTH_LONG).show();
-
-// Получаем database
                 AppDatabase db = AppDatabase.getInstance(requireContext());
 
-// Разделяем адрес на название и полный адрес
                 String[] addressParts = splitAddress(address);
                 String locationName = addressParts[0];
                 String fullAddress = addressParts[1].isEmpty() ? address : addressParts[1];
 
-// Создаём объект Location
+                // Сохраняем радиус ВСЕГДА В МЕТРАХ
                 Location location = new Location(
-                        locationName,           // Название
-                        fullAddress,            // Адрес
-                        position.latitude,      // Широта
-                        position.longitude,     // Долгота
-                        currentRadius           // Радиус
+                        locationName,
+                        fullAddress,
+                        position.latitude,
+                        position.longitude,
+                        currentRadiusMeters  // Сохраняем в метрах
                 );
 
-// Сохраняем в базу данных
                 db.locationDao().insert(location);
 
-// Показываем уведомление
                 Toast.makeText(getContext(),
                         "Location saved successfully!",
                         Toast.LENGTH_SHORT).show();
-                // Сохраняем: position.latitude, position.longitude, address, currentRadius
 
-                // Возвращаемся на главную страницу
                 if (getActivity() instanceof MainActivity) {
                     MainActivity activity = (MainActivity) getActivity();
                     activity.replaceFragment(new HomeFragment(), true);
                 }
             } else {
-                // Если маркер не установлен - показываем предупреждение
                 Toast.makeText(getContext(),
                         "Please select a location on the map",
                         Toast.LENGTH_SHORT).show();
@@ -245,48 +206,60 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         return view;
     }
 
-    // === CALLBACK КОГДА КАРТА ГОТОВА ===
+
+    // === НАСТРОЙКА СЛАЙДЕРА (УНИВЕРСАЛЬНАЯ ВЕРСИЯ) ===
+    private void setupSlider() {
+        // Слайдер ВСЕГДА работает в метрах (внутренний формат)
+        sliderRadius.setValueFrom(100);
+        sliderRadius.setValueTo(2000);
+        sliderRadius.setStepSize(50);
+        sliderRadius.setValue(currentRadiusMeters);
+
+        // Обновляем текст в зависимости от выбранных единиц
+        updateRadiusText();
+    }
+
+    // === ОБНОВЛЕНИЕ ТЕКСТА РАДИУСА ===
+    private void updateRadiusText() {
+        tvRadiusValue.setText(SettingsFragment.formatDistance(requireContext(), currentRadiusMeters));
+    }
+
+    // === КОНВЕРТАЦИЯ ЗНАЧЕНИЯ СЛАЙДЕРА В МЕТРЫ ===
+    private float convertSliderValueToMeters(float sliderValue) {
+        String units = SettingsFragment.getUnits(requireContext());
+
+        if ("miles".equals(units)) {
+            // Слайдер в футах -> конвертируем в метры
+            return sliderValue / 3.28084f;
+        } else {
+            // Слайдер уже в метрах
+            return sliderValue;
+        }
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        // Сохраняем ссылку на карту
         mMap = googleMap;
 
-        // === УСТАНАВЛИВАЕМ КАСТОМНЫЙ INFO WINDOW АДАПТЕР ===
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
-        // Устанавливаем начальную позицию (Кишинёв, Молдова)
         LatLng chisinau = new LatLng(47.0105, 28.8638);
-
-        // Перемещаем камеру на Кишинёв с зумом 12
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
 
-        // === НАСТРОЙКА ЭЛЕМЕНТОВ КАРТЫ ===
-
-        // Включаем элементы управления зумом (+/-)
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
-        // Включаем жесты (масштабирование пальцами)
         mMap.getUiSettings().setZoomGesturesEnabled(true);
-
-        // Включаем кнопку "Моя геолокация"
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-        // Проверяем разрешение на геолокацию
         if (ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Если разрешение есть - включаем слой "Моя локация"
             mMap.setMyLocationEnabled(true);
         } else {
-            // Если разрешения нет - запрашиваем его
             ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
 
-        // === ОБРАБОТЧИК КЛИКА ПО КАРТЕ ===
-        // Когда пользователь нажимает на карту
         mMap.setOnMapClickListener(latLng -> {
-            // Удаляем предыдущий маркер и круг если они были
             if (selectedMarker != null) {
                 selectedMarker.remove();
             }
@@ -294,43 +267,34 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 radiusCircle.remove();
             }
 
-            // Получаем адрес по координатам
             String address = getAddressFromLatLng(latLng);
-
-            // Разделяем адрес на заголовок и описание
             String[] addressParts = splitAddress(address);
 
-            // Создаём новый маркер на месте клика
             selectedMarker = mMap.addMarker(new MarkerOptions()
                     .position(latLng)
-                    .title(addressParts[0])      // Название остановки/улица
-                    .snippet(addressParts[1])    // Полный адрес
-                    .draggable(true));            // Маркер можно перетаскивать
+                    .title(addressParts[0])
+                    .snippet(addressParts[1])
+                    .draggable(true));
 
-            // Создаём круг радиуса вокруг маркера
             radiusCircle = mMap.addCircle(new CircleOptions()
                     .center(latLng)
-                    .radius(currentRadius)                          // Радиус в метрах
-                    .strokeColor(Color.parseColor("#8D6E63"))       // Цвет границы (коричневый)
-                    .strokeWidth(3f)                                 // Толщина границы
-                    .fillColor(Color.parseColor("#40D7CCC8")));     // Цвет заливки (полупрозрачный бежевый)
+                    .radius(currentRadiusMeters)
+                    .strokeColor(Color.parseColor("#8D6E63"))
+                    .strokeWidth(3f)
+                    .fillColor(Color.parseColor("#40D7CCC8")));
 
-            // Показываем информационное окно маркера
             if (selectedMarker != null) {
                 selectedMarker.showInfoWindow();
             }
         });
 
-        // === ОБРАБОТЧИК ПЕРЕТАСКИВАНИЯ МАРКЕРА ===
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {
-                // Начало перетаскивания - ничего не делаем
             }
 
             @Override
             public void onMarkerDrag(Marker marker) {
-                // Во время перетаскивания обновляем позицию круга
                 if (radiusCircle != null) {
                     radiusCircle.setCenter(marker.getPosition());
                 }
@@ -338,7 +302,6 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
-                // Конец перетаскивания - обновляем адрес
                 LatLng newPosition = marker.getPosition();
                 String address = getAddressFromLatLng(newPosition);
                 String[] addressParts = splitAddress(address);
@@ -347,7 +310,6 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 marker.setSnippet(addressParts[1]);
                 marker.showInfoWindow();
 
-                // Обновляем позицию круга
                 if (radiusCircle != null) {
                     radiusCircle.setCenter(newPosition);
                 }
@@ -355,50 +317,39 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         });
     }
 
-    // === КАСТОМНЫЙ АДАПТЕР ДЛЯ INFO WINDOW ===
-    // Этот класс создаёт кастомное окно с информацией о маркере
     private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         private View mWindow;
 
         CustomInfoWindowAdapter() {
-            // Инфлейтим наш кастомный layout
             mWindow = getLayoutInflater().inflate(R.layout.custom_info_window, null);
         }
 
         @Override
         public View getInfoWindow(Marker marker) {
-            // Возвращаем null чтобы использовать стандартную рамку
             return null;
         }
 
         @Override
         public View getInfoContents(Marker marker) {
-            // Заполняем наш кастомный layout данными маркера
             TextView title = mWindow.findViewById(R.id.info_title);
             TextView snippet = mWindow.findViewById(R.id.info_snippet);
 
-            // Устанавливаем заголовок
             title.setText(marker.getTitle());
-
-            // Устанавливаем описание
             snippet.setText(marker.getSnippet());
 
             return mWindow;
         }
     }
 
-    // === ФУНКЦИЯ ДЛЯ РАЗДЕЛЕНИЯ АДРЕСА НА ЧАСТИ ===
-    // Разделяет адрес на заголовок (для title) и полное описание (для snippet)
     private String[] splitAddress(String fullAddress) {
         String[] result = new String[2];
 
-        // Разделяем по первому переносу строки
         String[] parts = fullAddress.split("\n", 2);
 
         if (parts.length >= 2) {
-            result[0] = parts[0]; // Первая строка - заголовок
-            result[1] = parts[1]; // Остальное - описание
+            result[0] = parts[0];
+            result[1] = parts[1];
         } else {
             result[0] = fullAddress;
             result[1] = "";
@@ -407,66 +358,46 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         return result;
     }
 
-    // === ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ АДРЕСА ПО КООРДИНАТАМ ===
-    // Принимает координаты (широта, долгота)
-    // Возвращает читаемый адрес (остановка, улица, город, страна)
     private String getAddressFromLatLng(LatLng latLng) {
-        // Geocoder - класс для преобразования координат в адреса
         Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
 
         try {
-            // Получаем список адресов по координатам (максимум 1)
             List<Address> addresses = geocoder.getFromLocation(
-                    latLng.latitude,  // Широта
-                    latLng.longitude, // Долгота
-                    1                 // Количество результатов
+                    latLng.latitude,
+                    latLng.longitude,
+                    1
             );
 
-            // Если адрес найден
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
 
-                // Формируем читаемую строку адреса
                 StringBuilder fullAddress = new StringBuilder();
 
-                // === НАЗВАНИЕ ОСТАНОВКИ / ТОЧКИ ИНТЕРЕСА ===
-                // getFeatureName() возвращает название места (остановка, магазин, парк и т.д.)
                 String featureName = address.getFeatureName();
                 if (featureName != null && !featureName.matches("^\\d.*")) {
-                    // Если название не является просто цифрой (номером дома)
                     fullAddress.append(featureName);
                 }
 
-                // === НОМЕР ДОМА ===
-                // getSubThoroughfare() обычно возвращает номер дома
                 String houseNumber = address.getSubThoroughfare();
-
-                // === НАЗВАНИЕ УЛИЦЫ ===
-                // getThoroughfare() возвращает название улицы
                 String streetName = address.getThoroughfare();
 
-                // Формируем адрес: "Улица, номер дома"
                 if (streetName != null) {
-                    // Если уже есть название остановки, добавляем запятую
                     if (fullAddress.length() > 0) {
-                        fullAddress.append("\n"); // Перенос на новую строку
+                        fullAddress.append("\n");
                     }
 
                     fullAddress.append(streetName);
 
-                    // Добавляем номер дома если есть
                     if (houseNumber != null) {
                         fullAddress.append(", ").append(houseNumber);
                     }
                 } else if (houseNumber != null) {
-                    // Если улицы нет, но номер дома есть
                     if (fullAddress.length() > 0) {
                         fullAddress.append("\n");
                     }
                     fullAddress.append(houseNumber);
                 }
 
-                // === ГОРОД ===
                 String city = address.getLocality();
                 if (city != null) {
                     if (fullAddress.length() > 0) {
@@ -475,7 +406,6 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                     fullAddress.append(city);
                 }
 
-                // === СТРАНА ===
                 String country = address.getCountryName();
                 if (country != null) {
                     if (fullAddress.length() > 0) {
@@ -484,42 +414,40 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                     fullAddress.append(country);
                 }
 
-                // Возвращаем полный адрес
                 return fullAddress.toString();
             }
         } catch (IOException e) {
-            // Если произошла ошибка при получении адреса
             e.printStackTrace();
         }
 
-        // Если адрес не найден - возвращаем координаты
         return "Lat: " + String.format("%.4f", latLng.latitude) +
                 ", Lng: " + String.format("%.4f", latLng.longitude);
     }
 
-    // === ОБРАБОТКА РЕЗУЛЬТАТА ЗАПРОСА РАЗРЕШЕНИЙ ===
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        // Проверяем что это наш запрос разрешения на геолокацию
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            // Проверяем что разрешение было выдано
             if (grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                // Проверяем разрешение ещё раз (требование Android)
                 if (ContextCompat.checkSelfPermission(requireContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    // Включаем слой "Моя локация" на карте
                     mMap.setMyLocationEnabled(true);
                 }
             } else {
-                // Если пользователь отказал в разрешении
                 Toast.makeText(getContext(),
                         "Location permission denied",
                         Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Обновляем только отображение текста
+        updateRadiusText();
     }
 }
