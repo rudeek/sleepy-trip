@@ -23,6 +23,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -67,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         // Устанавливаем наш layout как содержимое активности
         setContentView(binding.getRoot());
 
+        // === ЗАПРАШИВАЕМ ВСЕ РАЗРЕШЕНИЯ СРАЗУ ПРИ ЗАПУСКЕ ===
+        requestAllPermissions();
+
         // === ИНИЦИАЛИЗАЦИЯ ЭЛЕМЕНТОВ ===
 
         // Получаем ссылку на DrawerLayout из нашего XML
@@ -81,31 +85,6 @@ public class MainActivity extends AppCompatActivity {
         // Говорим системе, что наш toolbar теперь ActionBar (верхняя панель приложения)
         setSupportActionBar(toolbar);
 
-        // === ЗАПРОС РАЗРЕШЕНИЯ НА УВЕДОМЛЕНИЯ (Android 13+) ===
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                try {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, 123);
-
-                Toast.makeText(this,
-                        "Для работы будильника разрешите показ поверх других окон",
-                        Toast.LENGTH_LONG).show();
-            }
-        }
 
 
 
@@ -432,6 +411,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    // === МЕТОД ДЛЯ ЗАПРОСА ВСЕХ РАЗРЕШЕНИЙ ===
+    private void requestAllPermissions() {
+        // Список разрешений которые нужно запросить
+        java.util.ArrayList<String> permissionsToRequest = new java.util.ArrayList<>();
+
+        // 1. Геолокация (обязательно)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        // 2. Фоновая геолокация (для Android 10+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+            }
+        }
+
+        // 3. Уведомления (для Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
+        // Если есть разрешения для запроса - запрашиваем
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissionsToRequest.toArray(new String[0]),
+                    1001
+            );
+        } else {
+            // Все разрешения уже выданы
+            checkOverlayPermission();
+        }
+    }
+
+    // === ОБРАБОТКА РЕЗУЛЬТАТА ЗАПРОСА РАЗРЕШЕНИЙ ===
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -439,12 +460,53 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == 1001) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Разрешение получено
-                android.util.Log.d("MainActivity", "✅ Разрешение на уведомления получено");
+            boolean allGranted = true;
+            StringBuilder deniedPermissions = new StringBuilder();
+
+            for (int i = 0; i < permissions.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+
+                    // Определяем какое разрешение отклонено
+                    if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        deniedPermissions.append("• Геолокация\n");
+                    } else if (permissions[i].equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                        deniedPermissions.append("• Фоновая геолокация\n");
+                    } else if (permissions[i].equals(Manifest.permission.POST_NOTIFICATIONS)) {
+                        deniedPermissions.append("• Уведомления\n");
+                    }
+                }
+            }
+
+            if (allGranted) {
+                Toast.makeText(this, "✅ Все разрешения предоставлены!", Toast.LENGTH_SHORT).show();
+                checkOverlayPermission();
             } else {
-                // Разрешение отклонено
-                android.util.Log.w("MainActivity", "⚠️ Уведомления отключены пользователем");
+                // Показываем какие разрешения отклонены
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("⚠️ Необходимы разрешения")
+                        .setMessage("Для работы приложения необходимы:\n\n" + deniedPermissions.toString())
+                        .setPositiveButton("Предоставить", (dialog, which) -> requestAllPermissions())
+                        .setNegativeButton("Позже", null)
+                        .show();
+            }
+        }
+    }
+
+    // === ПРОВЕРКА РАЗРЕШЕНИЯ НА ПОКАЗ ПОВЕРХ ДРУГИХ ОКОН ===
+    private void checkOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("🔔 Разрешение на будильник")
+                        .setMessage("Для работы будильника разрешите показ поверх других окон")
+                        .setPositiveButton("Разрешить", (dialog, which) -> {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:" + getPackageName()));
+                            startActivityForResult(intent, 123);
+                        })
+                        .setNegativeButton("Позже", null)
+                        .show();
             }
         }
     }

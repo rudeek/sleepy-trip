@@ -53,7 +53,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Радиус будильника"
+                android:text="Alarm radius"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/lavender"/>
@@ -62,7 +62,7 @@
                 android:id="@+id/tv_radius_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="500 м"
+                android:text="500 m"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/lavender"/>

@@ -423,37 +423,24 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
-        // ⭐ ИЗМЕНЕНО: Получаем текущую локацию перед показом карты
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        LatLng chisinau = new LatLng(47.0105, 28.8638);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
 
-            // Получаем текущую локацию
-            getCurrentLocation();
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-            mMap.setMyLocationEnabled(true);
-
-            // Центрируем карту на текущей позиции
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(requireActivity(), location -> {
-                        if (location != null) {
-                            LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-                        } else {
-                            // Если не удалось получить локацию, используем дефолтную (Кишинёв)
-                            LatLng chisinau = new LatLng(47.0105, 28.8638);
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
-                        }
-                    });
-        } else {
-            // Запрашиваем разрешение
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-
-            // Показываем дефолтную локацию (Кишинёв)
-            LatLng chisinau = new LatLng(47.0105, 28.8638);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chisinau, 12));
+        // Просто включаем "Моя локация" без запроса (разрешение уже получено)
+        try {
+            if (ContextCompat.checkSelfPermission(requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mMap.setMyLocationEnabled(true);
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
+
+
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
@@ -622,36 +609,6 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
         return "Lat: " + String.format("%.4f", latLng.latitude) +
                 ", Lng: " + String.format("%.4f", latLng.longitude);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                if (ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    mMap.setMyLocationEnabled(true);
-                    getCurrentLocation();
-
-                    // Центрируем карту на текущей позиции
-                    fusedLocationClient.getLastLocation()
-                            .addOnSuccessListener(requireActivity(), location -> {
-                                if (location != null) {
-                                    LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-                                }
-                            });
-                }
-            } else {
-                Toast.makeText(getContext(),
-                        "Location permission denied",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
