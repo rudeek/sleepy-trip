@@ -423,15 +423,7 @@ public class MainActivity extends AppCompatActivity {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
-        // 2. Фоновая геолокация (для Android 10+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-            }
-        }
-
-        // 3. Уведомления (для Android 13+)
+        // 2. Уведомления (для Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -470,8 +462,6 @@ public class MainActivity extends AppCompatActivity {
                     // Определяем какое разрешение отклонено
                     if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                         deniedPermissions.append("• Геолокация\n");
-                    } else if (permissions[i].equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-                        deniedPermissions.append("• Фоновая геолокация\n");
                     } else if (permissions[i].equals(Manifest.permission.POST_NOTIFICATIONS)) {
                         deniedPermissions.append("• Уведомления\n");
                     }
