@@ -12,14 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_margin="16dp"
-        android:queryHint="Select location"
+        android:queryHint="@string/add_location_search_hint"
         android:iconifiedByDefault="false"
         android:background="@drawable/rounded_search_bg"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:elevation="10dp" />
-
-
 
     <!-- Google Maps Fragment -->
     <fragment
@@ -29,7 +27,6 @@
         android:layout_height="match_parent"
         android:layout_below="@id/search_view"
         android:layout_above="@id/radius_container"/>
-
 
     <!-- Контейнер для настройки радиуса -->
     <LinearLayout
@@ -53,7 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Alarm radius"
+                android:text="@string/add_location_radius"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/lavender"/>
@@ -62,7 +59,7 @@
                 android:id="@+id/tv_radius_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="500 m"
+                android:text="500 м"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/lavender"/>
@@ -88,7 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Будильник включится когда вы приблизитесь к выбранной точке"
+            android:text="@string/add_location_radius_hint"
             android:textSize="12sp"
             android:textColor="#757575"/>
 
@@ -112,7 +109,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="Cancel"
+            android:text="@string/add_location_cancel"
             android:backgroundTint="@color/lavender"
             android:textColor="@color/white"/>
 
@@ -123,7 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Add Location"
+            android:text="@string/add_location_add"
             android:backgroundTint="@color/lavender"
             android:textColor="@color/white"/>
 

@@ -2,6 +2,9 @@ package com.example.sleepytrip;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.Locale;
 
 public class SettingsFragment extends Fragment {
 
@@ -27,6 +32,7 @@ public class SettingsFragment extends Fragment {
     private SharedPreferences prefs;
     private static final String PREFS_NAME = "SleepyTripSettings";
     private static final String KEY_UNITS = "units";
+    private static final String KEY_LANGUAGE = "language";
     private static final String UNITS_KM = "km";
     private static final String UNITS_MILES = "miles";
 
@@ -61,11 +67,7 @@ public class SettingsFragment extends Fragment {
         });
 
         // Language - выбор языка
-        settingLanguage.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Language: выбор языка приложения",
-                    Toast.LENGTH_SHORT).show();
-        });
+        settingLanguage.setOnClickListener(v -> showLanguageBottomSheet());
 
         // Default alarm perimeter - радиус будильника по умолчанию
         settingDefaultPerimeter.setOnClickListener(v -> {
@@ -105,27 +107,22 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
-    // === МЕТОД ДЛЯ ПОКАЗА КРАСИВОГО BOTTOMSHEET ===
+    // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЕДИНИЦ ===
     private void showUnitsBottomSheet() {
-        // Создаём BottomSheetDialog
         BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext());
 
-        // Инфлейтим наш красивый layout
         View sheetView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottom_sheet_units, null);
 
         bottomSheet.setContentView(sheetView);
 
-        // Находим элементы
         androidx.cardview.widget.CardView optionKilometers = sheetView.findViewById(R.id.option_kilometers);
         androidx.cardview.widget.CardView optionMiles = sheetView.findViewById(R.id.option_miles);
         ImageView checkKilometers = sheetView.findViewById(R.id.check_kilometers);
         ImageView checkMiles = sheetView.findViewById(R.id.check_miles);
 
-        // Получаем текущие настройки
         String currentUnits = prefs.getString(KEY_UNITS, UNITS_KM);
 
-        // Устанавливаем галочки
         if (UNITS_KM.equals(currentUnits)) {
             checkKilometers.setVisibility(View.VISIBLE);
             checkMiles.setVisibility(View.GONE);
@@ -134,50 +131,121 @@ public class SettingsFragment extends Fragment {
             checkMiles.setVisibility(View.VISIBLE);
         }
 
-        // === КЛИК НА КИЛОМЕТРЫ ===
         optionKilometers.setOnClickListener(v -> {
-            // Сохраняем выбор
             prefs.edit().putString(KEY_UNITS, UNITS_KM).apply();
-
-            // Показываем уведомление
             Toast.makeText(requireContext(),
-                    "✅ Kilometers selected",
+                    getString(R.string.units_changed_km),
                     Toast.LENGTH_SHORT).show();
-
-            // Закрываем BottomSheet
             bottomSheet.dismiss();
         });
 
-        // === КЛИК НА МИЛИ ===
         optionMiles.setOnClickListener(v -> {
-            // Сохраняем выбор
             prefs.edit().putString(KEY_UNITS, UNITS_MILES).apply();
-
-            // Показываем уведомление
             Toast.makeText(requireContext(),
-                    "✅ Miles selected",
+                    getString(R.string.units_changed_miles),
                     Toast.LENGTH_SHORT).show();
-
-            // Закрываем BottomSheet
             bottomSheet.dismiss();
         });
 
-        // Показываем BottomSheet
         bottomSheet.show();
     }
 
-    // === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ЕДИНИЦ ===
+    // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЯЗЫКА ===
+    private void showLanguageBottomSheet() {
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext());
+
+        View sheetView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.bottom_sheet_language, null);
+
+        bottomSheet.setContentView(sheetView);
+
+        androidx.cardview.widget.CardView optionEnglish = sheetView.findViewById(R.id.option_english);
+        androidx.cardview.widget.CardView optionRussian = sheetView.findViewById(R.id.option_russian);
+        androidx.cardview.widget.CardView optionRomanian = sheetView.findViewById(R.id.option_romanian);
+        ImageView checkEnglish = sheetView.findViewById(R.id.check_english);
+        ImageView checkRussian = sheetView.findViewById(R.id.check_russian);
+        ImageView checkRomanian = sheetView.findViewById(R.id.check_romanian);
+
+        String currentLanguage = prefs.getString(KEY_LANGUAGE, "en");
+
+        // Устанавливаем галочки
+        checkEnglish.setVisibility(currentLanguage.equals("en") ? View.VISIBLE : View.GONE);
+        checkRussian.setVisibility(currentLanguage.equals("ru") ? View.VISIBLE : View.GONE);
+        checkRomanian.setVisibility(currentLanguage.equals("ro") ? View.VISIBLE : View.GONE);
+
+        // English
+        optionEnglish.setOnClickListener(v -> {
+            changeLanguage("en");
+            bottomSheet.dismiss();
+        });
+
+        // Russian
+        optionRussian.setOnClickListener(v -> {
+            changeLanguage("ru");
+            bottomSheet.dismiss();
+        });
+
+        // Romanian
+        optionRomanian.setOnClickListener(v -> {
+            changeLanguage("ro");
+            bottomSheet.dismiss();
+        });
+
+        bottomSheet.show();
+    }
+
+    // === МЕТОД ДЛЯ СМЕНЫ ЯЗЫКА ===
+    private void changeLanguage(String languageCode) {
+        // Сохраняем выбранный язык
+        prefs.edit().putString(KEY_LANGUAGE, languageCode).apply();
+
+        // Применяем язык
+        setLocale(requireContext(), languageCode);
+
+        // Показываем уведомление
+        Toast.makeText(requireContext(),
+                getString(R.string.language_changed),
+                Toast.LENGTH_LONG).show();
+
+        // Перезапускаем активность для применения изменений
+        requireActivity().recreate();
+    }
+
+    // === МЕТОД ДЛЯ УСТАНОВКИ LOCALE ===
+    public static void setLocale(Context context, String languageCode) {
+        Locale locale = new Locale(languageCode);
+        Locale.setDefault(locale);
+
+        Resources resources = context.getResources();
+        Configuration config = new Configuration(resources.getConfiguration());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocale(locale);
+            context.createConfigurationContext(config);
+        } else {
+            config.locale = locale;
+        }
+
+        resources.updateConfiguration(config, resources.getDisplayMetrics());
+    }
+
+    // === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ТЕКУЩЕГО ЯЗЫКА ===
+    public static String getCurrentLanguage(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(KEY_LANGUAGE, "en");
+    }
+
+    // === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ТЕКУЩИХ ЕДИНИЦ ИЗМЕРЕНИЯ ===
     public static String getUnits(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_UNITS, UNITS_KM);
     }
 
-    // === МЕТОД ДЛЯ ФОРМАТИРОВАНИЯ РАССТОЯНИЙ ===
+    // === МЕТОД ДЛЯ КОНВЕРТАЦИИ МЕТРОВ В ТЕКУЩИЕ ЕДИНИЦЫ ===
     public static String formatDistance(Context context, float meters) {
         String units = getUnits(context);
 
         if (UNITS_MILES.equals(units)) {
-            // Мили/футы
             float miles = meters * 0.000621371f;
 
             if (miles >= 1) {
@@ -187,7 +255,6 @@ public class SettingsFragment extends Fragment {
                 return String.format("%.0f ft", feet);
             }
         } else {
-            // Километры/метры
             if (meters >= 1000) {
                 return String.format("%.1f km", meters / 1000);
             } else {

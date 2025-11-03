@@ -34,45 +34,62 @@ public class AlarmActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // КРИТИЧНО: Настраиваем окно ДО setContentView
+        // Применяем сохранённый язык
+        String savedLanguage = SettingsFragment.getCurrentLanguage(this);
+        SettingsFragment.setLocale(this, savedLanguage);
+
         setupWindowFlags();
 
         setContentView(R.layout.activity_alarm);
 
-        // Инициализируем БД
         db = AppDatabase.getInstance(this);
 
-        // Получаем данные о локации
         locationName = getIntent().getStringExtra("location_name");
         locationAddress = getIntent().getStringExtra("location_address");
 
-        // Находим элементы
         TextView tvAlarmTitle = findViewById(R.id.tv_alarm_title);
         TextView tvAlarmMessage = findViewById(R.id.tv_alarm_message);
         Button btnStopAlarm = findViewById(R.id.btn_stop_alarm);
 
-        // Устанавливаем текст
-        tvAlarmTitle.setText("🔔 Вы прибыли!");
+        // Используем строковые ресурсы
+        tvAlarmTitle.setText(getString(R.string.alarm_title));
         tvAlarmMessage.setText(locationName + "\n" + locationAddress);
 
-        // Запускаем рингтон и вибрацию (дополнительно, на случай если сервис не запустил)
         playAlarmSound();
         startVibration();
 
-        // Кнопка остановки будильника
         btnStopAlarm.setOnClickListener(v -> {
-            // ⭐ Останавливаем звук и вибрацию В СЕРВИСЕ
             stopServiceAlarm();
-
             stopAlarmSound();
             stopVibration();
-
-            // ⭐ ВАЖНО: Отключаем локацию И проверяем сервис в ОДНОМ потоке
-            disableLocationAndCheckService();
+            disableLocation();
+            checkAndStopService();
+            finish();
         });
     }
 
-    // Настройка флагов окна для показа поверх экрана блокировки
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        // Применяем язык перед созданием контекста
+        String savedLanguage = newBase.getSharedPreferences("SleepyTripSettings", Context.MODE_PRIVATE)
+                .getString("language", "en");
+
+        java.util.Locale locale = new java.util.Locale(savedLanguage);
+        java.util.Locale.setDefault(locale);
+
+        android.content.res.Configuration config = new android.content.res.Configuration(newBase.getResources().getConfiguration());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocale(locale);
+            Context context = newBase.createConfigurationContext(config);
+            super.attachBaseContext(context);
+        } else {
+            config.locale = locale;
+            newBase.getResources().updateConfiguration(config, newBase.getResources().getDisplayMetrics());
+            super.attachBaseContext(newBase);
+        }
+    }
+
     private void setupWindowFlags() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
@@ -87,14 +104,12 @@ public class AlarmActivity extends AppCompatActivity {
                         WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Для Android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getWindow().getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
         }
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Останавливаем звук и вибрацию в сервисе
     private void stopServiceAlarm() {
         try {
             Intent stopIntent = new Intent("STOP_ALARM");
@@ -106,11 +121,9 @@ public class AlarmActivity extends AppCompatActivity {
         }
     }
 
-    // ⭐ ОБЪЕДИНЕННЫЙ МЕТОД: Отключаем локацию И проверяем сервис
-    private void disableLocationAndCheckService() {
+    private void disableLocation() {
         new Thread(() -> {
             try {
-                // Получаем ID из Intent
                 final int locationId = getIntent().getIntExtra("location_id", -1);
 
                 if (locationId == -1) {
@@ -119,91 +132,85 @@ public class AlarmActivity extends AppCompatActivity {
                         Toast.makeText(AlarmActivity.this,
                                 "Ошибка: ID локации не найден",
                                 Toast.LENGTH_SHORT).show();
-                        finish();
                     });
                     return;
                 }
 
                 Log.d("AlarmActivity", "🔍 Отключаем локацию ID=" + locationId);
 
-                // ШАГ 1: Получаем и выключаем локацию
                 com.example.sleepytrip.Location targetLocation = db.locationDao().getLocationById(locationId);
 
-                if (targetLocation == null) {
+                if (targetLocation != null) {
+                    Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
+
+                    targetLocation.setActive(false);
+                    db.locationDao().update(targetLocation);
+
+                    Log.d("AlarmActivity", "✅ Локация обновлена в БД");
+
+                    final String name = targetLocation.getName();
+                    runOnUiThread(() -> {
+                        Toast.makeText(AlarmActivity.this,
+                                getString(R.string.alarm_disabled, name),
+                                Toast.LENGTH_SHORT).show();
+                    });
+                } else {
                     Log.e("AlarmActivity", "❌ Локация ID=" + locationId + " НЕ НАЙДЕНА в БД!");
                     runOnUiThread(() -> {
                         Toast.makeText(AlarmActivity.this,
                                 "Ошибка: локация не найдена",
                                 Toast.LENGTH_SHORT).show();
-                        finish();
                     });
-                    return;
                 }
-
-                Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
-
-                // Выключаем локацию
-                targetLocation.setActive(false);
-                db.locationDao().update(targetLocation);
-
-                Log.d("AlarmActivity", "✅ Локация обновлена в БД (Active=false)");
-
-                final String locationName = targetLocation.getName();
-
-                // ШАГ 2: Проверяем есть ли ещё активные локации
-                List<Location> allLocations = db.locationDao().getAllLocations();
-                Log.d("AlarmActivity", "📋 Всего локаций в БД: " + allLocations.size());
-
-                boolean hasActiveLocation = false;
-                for (Location location : allLocations) {
-                    Log.d("AlarmActivity", "  - " + location.getName() +
-                            " (ID=" + location.getId() + ", Active=" + location.isActive() + ")");
-                    if (location.isActive()) {
-                        hasActiveLocation = true;
-                    }
-                }
-
-                Log.d("AlarmActivity", "🎯 Результат проверки: hasActiveLocation = " + hasActiveLocation);
-
-                final boolean shouldStopService = !hasActiveLocation;
-
-                // ШАГ 3: Показываем уведомления и останавливаем сервис если нужно
-                runOnUiThread(() -> {
-                    // Первое уведомление - о выключении локации
-                    Toast.makeText(AlarmActivity.this,
-                            "Будильник для \"" + locationName + "\" выключен",
-                            Toast.LENGTH_SHORT).show();
-
-                    if (shouldStopService) {
-                        Log.d("AlarmActivity", "🛑 Останавливаем LocationService");
-
-                        // Останавливаем сервис
-                        Intent serviceIntent = new Intent(AlarmActivity.this, LocationService.class);
-                        boolean stopped = stopService(serviceIntent);
-
-                        Log.d("AlarmActivity", "📡 stopService() вернул: " + stopped);
-
-                        // Второе уведомление - об остановке сервиса
-                        Toast.makeText(AlarmActivity.this,
-                                "Отслеживание локаций остановлено",
-                                Toast.LENGTH_LONG).show();
-                    } else {
-                        Log.d("AlarmActivity", "✅ Сервис продолжает работать (есть активные локации)");
-                    }
-
-                    // Закрываем активность
-                    finish();
-                });
-
             } catch (Exception e) {
-                Log.e("AlarmActivity", "❌ ОШИБКА disableLocationAndCheckService: " + e.getMessage(), e);
+                Log.e("AlarmActivity", "❌ ОШИБКА disableLocation: " + e.getMessage(), e);
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(AlarmActivity.this,
                             "Ошибка при отключении локации",
                             Toast.LENGTH_SHORT).show();
-                    finish();
                 });
+            }
+        }).start();
+    }
+
+    private void checkAndStopService() {
+        new Thread(() -> {
+            try {
+                android.util.Log.d("AlarmActivity", "🔍 Проверяем активные локации...");
+
+                List<Location> locations = db.locationDao().getAllLocations();
+                android.util.Log.d("AlarmActivity", "📋 Всего локаций: " + locations.size());
+
+                boolean hasActiveLocation = false;
+                for (Location location : locations) {
+                    android.util.Log.d("AlarmActivity", "  - " + location.getName() +
+                            ": Active=" + location.isActive());
+                    if (location.isActive()) {
+                        hasActiveLocation = true;
+                        break;
+                    }
+                }
+
+                android.util.Log.d("AlarmActivity", "🎯 Есть активные локации? " + hasActiveLocation);
+
+                if (!hasActiveLocation) {
+                    android.util.Log.d("AlarmActivity", "🛑 Останавливаем LocationService");
+
+                    Intent serviceIntent = new Intent(AlarmActivity.this, LocationService.class);
+                    stopService(serviceIntent);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(AlarmActivity.this,
+                                getString(R.string.service_stopped),
+                                Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    android.util.Log.d("AlarmActivity", "✅ Сервис продолжает работать");
+                }
+            } catch (Exception e) {
+                android.util.Log.e("AlarmActivity", "❌ ОШИБКА checkAndStopService: " + e.getMessage(), e);
+                e.printStackTrace();
             }
         }).start();
     }
@@ -252,17 +259,14 @@ public class AlarmActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        // ⭐ КРИТИЧНО: Останавливаем звук и вибрацию при закрытии
         stopAlarmSound();
         stopVibration();
 
-        // Получаем ID локации из Intent
         int locationId = getIntent().getIntExtra("location_id", -1);
 
         if (locationId != -1) {
             Log.d("AlarmActivity", "🧹 onDestroy: сбрасываю локацию ID=" + locationId);
 
-            // Отправляем broadcast для очистки triggeredAlarms
             Intent resetIntent = new Intent("LOCATION_RESET");
             resetIntent.setPackage(getPackageName());
             resetIntent.putExtra("LOCATION_ID", locationId);

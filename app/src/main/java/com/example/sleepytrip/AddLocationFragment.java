@@ -101,7 +101,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (query == null || query.trim().isEmpty()) {
-                    Toast.makeText(getContext(), "Введите адрес", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(),  getString(R.string.add_location_enter_address), Toast.LENGTH_SHORT).show();
                     return false;
                 }
 
@@ -168,7 +168,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 db.locationDao().insert(location);
 
                 Toast.makeText(getContext(),
-                        "Location saved successfully!",
+                        getString(R.string.add_location_saved),
                         Toast.LENGTH_SHORT).show();
 
                 if (getActivity() instanceof MainActivity) {
@@ -177,7 +177,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                 }
             } else {
                 Toast.makeText(getContext(),
-                        "Please select a location on the map",
+                        getString(R.string.add_location_select_prompt),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -194,7 +194,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
             List<Address> globalResults = geocoder.getFromLocationName(query, 10);
 
             if (globalResults == null || globalResults.isEmpty()) {
-                Toast.makeText(getContext(), "Адрес не найден", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),  getString(R.string.add_location_not_found), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -204,12 +204,12 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
             if (bestMatch != null) {
                 showLocationOnMap(bestMatch, query);
             } else {
-                Toast.makeText(getContext(), "Адрес не найден", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),  getString(R.string.add_location_not_found), Toast.LENGTH_SHORT).show();
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(getContext(), "Ошибка при поиске адреса", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.add_location_error), Toast.LENGTH_SHORT).show();
         }
     }
 

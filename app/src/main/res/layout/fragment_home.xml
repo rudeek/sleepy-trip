@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="📍 Нет сохранённых локаций\n\nНажмите + чтобы добавить"
+        android:text="@string/home_empty_message"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:gravity="center"
@@ -28,7 +28,7 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
-    <!-- Кнопки режима удаления (как BottomAppBar) -->
+    <!-- Кнопки режима удаления -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/delete_mode_bottom_bar"
         android:layout_width="match_parent"
@@ -53,7 +53,7 @@
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:text="Отмена"
+                android:text="@string/home_cancel"
                 android:textSize="16sp"
                 android:backgroundTint="#757575"
                 android:textColor="@color/white"
@@ -66,7 +66,7 @@
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Удалить"
+                android:text="@string/home_confirm_delete"
                 android:textSize="16sp"
                 android:backgroundTint="#F44336"
                 android:textColor="@color/white"

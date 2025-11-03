@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="General"
+            android:text="@string/settings_general"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -63,7 +63,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Units"
+                        android:text="@string/settings_units"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -106,7 +106,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Theme"
+                        android:text="@string/settings_theme"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -127,7 +127,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Geo alarm"
+            android:text="@string/settings_geo_alarm"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -171,7 +171,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Language"
+                        android:text="@string/settings_language"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -214,7 +214,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Default alarm perimeter"
+                        android:text="@string/settings_default_perimeter"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -257,7 +257,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Location update frequency"
+                        android:text="@string/settings_location_frequency"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -300,7 +300,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Sorting alarms"
+                        android:text="@string/settings_sorting_alarms"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -343,7 +343,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Color theme"
+                        android:text="@string/settings_color_theme"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 
@@ -364,7 +364,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Support"
+            android:text="@string/settings_support"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -408,7 +408,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Rate app"
+                        android:text="@string/settings_rate_app"
                         android:textSize="15sp"
                         android:textColor="#212121"/>
 

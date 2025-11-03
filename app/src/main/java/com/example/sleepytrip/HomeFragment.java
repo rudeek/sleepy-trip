@@ -126,7 +126,7 @@ public class HomeFragment extends Fragment {
 
             if (selectedLocations.isEmpty()) {
                 Toast.makeText(requireContext(),
-                        "Выберите локации для удаления",
+                        getString(R.string.home_no_locations_to_select),
                         Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -137,7 +137,7 @@ public class HomeFragment extends Fragment {
             }
 
             Toast.makeText(requireContext(),
-                    "Удалено локаций: " + selectedLocations.size(),
+                    getString(R.string.home_deleted, selectedLocations.size()),
                     Toast.LENGTH_SHORT).show();
 
             // Выходим из режима удаления
@@ -375,7 +375,7 @@ public class HomeFragment extends Fragment {
             // Проверяем есть ли локации
             if (adapter.getItemCount() == 0) {
                 Toast.makeText(requireContext(),
-                        "Нет локаций для выбора",
+                        getString(R.string.home_no_locations_to_select),
                         Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -394,7 +394,7 @@ public class HomeFragment extends Fragment {
             // Проверяем есть ли локации
             if (adapter.getItemCount() == 0) {
                 Toast.makeText(requireContext(),
-                        "Нет локаций для удаления",
+                        getString(R.string.home_no_locations_to_delete),
                         Toast.LENGTH_SHORT).show();
                 return true;
             }

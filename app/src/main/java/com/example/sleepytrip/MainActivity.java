@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.sleepytrip.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationView;
+
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+// === ПРИМЕНЯЕМ СОХРАНЁННЫЙ ЯЗЫК ===
+        String savedLanguage = SettingsFragment.getCurrentLanguage(this);
+        SettingsFragment.setLocale(this, savedLanguage);
         // Создаём binding - это позволяет обращаться к элементам из XML
         // Например: binding.toolbar вместо findViewById(R.id.toolbar)
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -180,6 +186,34 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        // Применяем язык перед созданием контекста
+        String savedLanguage = newBase.getSharedPreferences("SleepyTripSettings", Context.MODE_PRIVATE)
+                .getString("language", "en");
+
+        Locale locale = new Locale(savedLanguage);
+        Locale.setDefault(locale);
+
+        Configuration config = new Configuration(newBase.getResources().getConfiguration());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocale(locale);
+            Context context = newBase.createConfigurationContext(config);
+            super.attachBaseContext(context);
+        } else {
+            config.locale = locale;
+            newBase.getResources().updateConfiguration(config, newBase.getResources().getDisplayMetrics());
+            super.attachBaseContext(newBase);
+        }
+    }
+
+
+
+
     // === ФУНКЦИЯ ДЛЯ ОБРАБОТКИ НАВИГАЦИИ НАЗАД ===
 
     // Эта функция решает что делать когда пользователь хочет вернуться назад
@@ -294,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
             });
 
-            setToolbarTitle("My Locations");
+            setToolbarTitle(getString(R.string.home_title));
             enableBackButton(false);
         } else {
             // Плавно скрываем
@@ -317,13 +351,13 @@ public class MainActivity extends AppCompatActivity {
             // ВАЖНО: Если скрываем bottom navigation, значит это Settings/About
             // Определяем какой заголовок показать
             if (fragment instanceof SettingsFragment) {
-                setToolbarTitle("Settings");
+                setToolbarTitle(getString(R.string.settings_title));
                 enableBackButton(true);
             } else if (fragment instanceof AboutFragment) {
-                setToolbarTitle("About us");
+                setToolbarTitle(getString(R.string.about_title));
                 enableBackButton(true);
             } else if (fragment instanceof AddLocationFragment) {
-                setToolbarTitle("Add Location");
+                setToolbarTitle(getString(R.string.add_location_title));
                 enableBackButton(true);
             }
         }
@@ -461,23 +495,22 @@ public class MainActivity extends AppCompatActivity {
 
                     // Определяем какое разрешение отклонено
                     if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        deniedPermissions.append("• Геолокация\n");
+                        deniedPermissions.append(getString(R.string.permission_location)).append("\n");
                     } else if (permissions[i].equals(Manifest.permission.POST_NOTIFICATIONS)) {
-                        deniedPermissions.append("• Уведомления\n");
+                        deniedPermissions.append(getString(R.string.permission_notifications)).append("\n");
                     }
                 }
             }
 
             if (allGranted) {
-                Toast.makeText(this, "✅ Все разрешения предоставлены!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.permission_all_granted), Toast.LENGTH_SHORT).show();
                 checkOverlayPermission();
             } else {
-                // Показываем какие разрешения отклонены
                 new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("⚠️ Необходимы разрешения")
-                        .setMessage("Для работы приложения необходимы:\n\n" + deniedPermissions.toString())
-                        .setPositiveButton("Предоставить", (dialog, which) -> requestAllPermissions())
-                        .setNegativeButton("Позже", null)
+                        .setTitle(getString(R.string.permission_needed_title))
+                        .setMessage(getString(R.string.permission_needed_message, deniedPermissions.toString()))
+                        .setPositiveButton(getString(R.string.permission_grant), (dialog, which) -> requestAllPermissions())
+                        .setNegativeButton(getString(R.string.permission_later), null)
                         .show();
             }
         }
@@ -488,14 +521,14 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
                 new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("🔔 Разрешение на будильник")
-                        .setMessage("Для работы будильника разрешите показ поверх других окон")
-                        .setPositiveButton("Разрешить", (dialog, which) -> {
+                        .setTitle(getString(R.string.permission_overlay_title))
+                        .setMessage(getString(R.string.permission_overlay_message))
+                        .setPositiveButton(getString(R.string.permission_allow), (dialog, which) -> {
                             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                     Uri.parse("package:" + getPackageName()));
                             startActivityForResult(intent, 123);
                         })
-                        .setNegativeButton("Позже", null)
+                        .setNegativeButton(getString(R.string.permission_later), null)
                         .show();
             }
         }

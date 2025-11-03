@@ -63,11 +63,18 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         holder.tvAddress.setText(location.getAddress());
 
         // Форматируем радиус
-        String radiusText = "📍 Радиус: " + SettingsFragment.formatDistance(
+
+        // Форматируем радиус с учётом языка и единиц
+        String radiusFormatted = SettingsFragment.formatDistance(
                 holder.itemView.getContext(),
                 location.getRadius()
         );
-        holder.tvRadius.setText(radiusText);
+        holder.tvRadius.setText(
+                holder.itemView.getContext().getString(
+                        R.string.location_radius_label,
+                        radiusFormatted
+                )
+        );
 
         // === РЕЖИМ УДАЛЕНИЯ ===
         if (isDeleteMode) {
