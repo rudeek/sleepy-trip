@@ -109,10 +109,26 @@
     <string name="permission_overlay_message">Разрешите показ поверх других окон для работы будильника</string>
     <string name="permission_allow">Разрешить</string>
 
+    <string name="app_emoji">✨</string>
+    <string name="app_version">Версия 1.0</string>
+
+    <string name="about_text_1">Мы — студенты колледжа CEITI, будущие программисты, которые с энтузиазмом создают современные и полезные приложения.</string>
+    <string name="about_text_2">Любим технологии, хорошие идеи и тот редкий момент, когда код работает без ошибок.</string>
+    <string name="about_text_3">Наша цель — развиваться, учиться новому и делать цифровой мир чуть удобнее.</string>
+
+    <string name="team_title">👨‍💻 Команда</string>
+    <string name="member_emoji_female">👩‍💻</string>
+    <string name="member_emoji_male">👨‍💻</string>
+    <string name="member_name_1">Иваногло Екатерина</string>
+    <string name="member_name_2">Рудов Андрей</string>
+    <string name="app_copyright">© 2025 SleepyTrip</string>
+
     <!-- Common -->
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
     <string name="my_maps_api_key"></string>
+
+
 </resources>
