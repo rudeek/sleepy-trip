@@ -62,8 +62,8 @@ public class AlarmActivity extends AppCompatActivity {
             stopServiceAlarm();
             stopAlarmSound();
             stopVibration();
-            disableLocation();
-            checkAndStopService();
+
+            disableLocationAndCheckService();
             finish();
         });
     }
@@ -121,9 +121,10 @@ public class AlarmActivity extends AppCompatActivity {
         }
     }
 
-    private void disableLocation() {
+    private void disableLocationAndCheckService() {
         new Thread(() -> {
             try {
+                // Получаем ID из Intent
                 final int locationId = getIntent().getIntExtra("location_id", -1);
 
                 if (locationId == -1) {
@@ -132,85 +133,91 @@ public class AlarmActivity extends AppCompatActivity {
                         Toast.makeText(AlarmActivity.this,
                                 "Ошибка: ID локации не найден",
                                 Toast.LENGTH_SHORT).show();
+                        finish();
                     });
                     return;
                 }
 
                 Log.d("AlarmActivity", "🔍 Отключаем локацию ID=" + locationId);
 
+                // ШАГ 1: Получаем и выключаем локацию
                 com.example.sleepytrip.Location targetLocation = db.locationDao().getLocationById(locationId);
 
-                if (targetLocation != null) {
-                    Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
-
-                    targetLocation.setActive(false);
-                    db.locationDao().update(targetLocation);
-
-                    Log.d("AlarmActivity", "✅ Локация обновлена в БД");
-
-                    final String name = targetLocation.getName();
-                    runOnUiThread(() -> {
-                        Toast.makeText(AlarmActivity.this,
-                                getString(R.string.alarm_disabled, name),
-                                Toast.LENGTH_SHORT).show();
-                    });
-                } else {
+                if (targetLocation == null) {
                     Log.e("AlarmActivity", "❌ Локация ID=" + locationId + " НЕ НАЙДЕНА в БД!");
                     runOnUiThread(() -> {
                         Toast.makeText(AlarmActivity.this,
                                 "Ошибка: локация не найдена",
                                 Toast.LENGTH_SHORT).show();
+                        finish();
                     });
+                    return;
                 }
+
+                Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
+
+                // Выключаем локацию
+                targetLocation.setActive(false);
+                db.locationDao().update(targetLocation);
+
+                Log.d("AlarmActivity", "✅ Локация обновлена в БД (Active=false)");
+
+                final String locationName = targetLocation.getName();
+
+                // ШАГ 2: Проверяем есть ли ещё активные локации
+                List<Location> allLocations = db.locationDao().getAllLocations();
+                Log.d("AlarmActivity", "📋 Всего локаций в БД: " + allLocations.size());
+
+                boolean hasActiveLocation = false;
+                for (Location location : allLocations) {
+                    Log.d("AlarmActivity", "  - " + location.getName() +
+                            " (ID=" + location.getId() + ", Active=" + location.isActive() + ")");
+                    if (location.isActive()) {
+                        hasActiveLocation = true;
+                    }
+                }
+
+                Log.d("AlarmActivity", "🎯 Результат проверки: hasActiveLocation = " + hasActiveLocation);
+
+                final boolean shouldStopService = !hasActiveLocation;
+
+                // ШАГ 3: Показываем уведомления и останавливаем сервис если нужно
+                runOnUiThread(() -> {
+                    // Первое уведомление - о выключении локации
+                    Toast.makeText(AlarmActivity.this,
+                            "Будильник для \"" + locationName + "\" выключен",
+                            Toast.LENGTH_SHORT).show();
+
+                    if (shouldStopService) {
+                        Log.d("AlarmActivity", "🛑 Останавливаем LocationService");
+
+                        // Останавливаем сервис
+                        Intent serviceIntent = new Intent(AlarmActivity.this, LocationService.class);
+                        boolean stopped = stopService(serviceIntent);
+
+                        Log.d("AlarmActivity", "📡 stopService() вернул: " + stopped);
+
+                        // Второе уведомление - об остановке сервиса
+                        Toast.makeText(AlarmActivity.this,
+                                "Отслеживание локаций остановлено",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Log.d("AlarmActivity", "✅ Сервис продолжает работать (есть активные локации)");
+                    }
+
+                    // Закрываем активность
+                    finish();
+                });
+
             } catch (Exception e) {
-                Log.e("AlarmActivity", "❌ ОШИБКА disableLocation: " + e.getMessage(), e);
+                Log.e("AlarmActivity", "❌ ОШИБКА disableLocationAndCheckService: " + e.getMessage(), e);
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(AlarmActivity.this,
                             "Ошибка при отключении локации",
                             Toast.LENGTH_SHORT).show();
+                    finish();
                 });
-            }
-        }).start();
-    }
-
-    private void checkAndStopService() {
-        new Thread(() -> {
-            try {
-                android.util.Log.d("AlarmActivity", "🔍 Проверяем активные локации...");
-
-                List<Location> locations = db.locationDao().getAllLocations();
-                android.util.Log.d("AlarmActivity", "📋 Всего локаций: " + locations.size());
-
-                boolean hasActiveLocation = false;
-                for (Location location : locations) {
-                    android.util.Log.d("AlarmActivity", "  - " + location.getName() +
-                            ": Active=" + location.isActive());
-                    if (location.isActive()) {
-                        hasActiveLocation = true;
-                        break;
-                    }
-                }
-
-                android.util.Log.d("AlarmActivity", "🎯 Есть активные локации? " + hasActiveLocation);
-
-                if (!hasActiveLocation) {
-                    android.util.Log.d("AlarmActivity", "🛑 Останавливаем LocationService");
-
-                    Intent serviceIntent = new Intent(AlarmActivity.this, LocationService.class);
-                    stopService(serviceIntent);
-
-                    runOnUiThread(() -> {
-                        Toast.makeText(AlarmActivity.this,
-                                getString(R.string.service_stopped),
-                                Toast.LENGTH_SHORT).show();
-                    });
-                } else {
-                    android.util.Log.d("AlarmActivity", "✅ Сервис продолжает работать");
-                }
-            } catch (Exception e) {
-                android.util.Log.e("AlarmActivity", "❌ ОШИБКА checkAndStopService: " + e.getMessage(), e);
-                e.printStackTrace();
             }
         }).start();
     }
