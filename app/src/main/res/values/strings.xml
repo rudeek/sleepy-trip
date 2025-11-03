@@ -1,10 +1,118 @@
 <resources>
-    <string name="app_name">SleepyTrip</string>
-    <string name="open_nav">Open Navigation Drawer</string>
-    <string name="close_nav">Close Navigation Drawer</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="my_maps_api_key">Your API</string>
+        <string name="app_name">SleepyTrip</string>
+
+        <!-- Navigation -->
+        <string name="navigation_drawer_open">Open Navigation Drawer</string>
+        <string name="navigation_drawer_close">Close Navigation Drawer</string>
+        <string name="nav_home">Home</string>
+        <string name="nav_settings">Settings</string>
+        <string name="nav_about">About us</string>
+        <string name="nav_exit">Exit</string>
+
+        <!-- Home Fragment -->
+        <string name="home_title">My Locations</string>
+        <string name="home_empty_message">📍 No saved locations\n\nPress + to add</string>
+        <string name="home_select_all">Select all</string>
+        <string name="home_delete">Delete</string>
+        <string name="home_cancel">Cancel</string>
+        <string name="home_confirm_delete">Delete</string>
+        <string name="home_deleted">Deleted: %d locations</string>
+        <string name="home_no_locations_to_delete">No locations to delete</string>
+        <string name="home_no_locations_to_select">No locations to select</string>
+
+        <!-- Add Location Fragment -->
+        <string name="add_location_title">Add Location</string>
+        <string name="add_location_search_hint">Select location</string>
+        <string name="add_location_radius">Alarm radius</string>
+        <string name="add_location_radius_hint">The alarm will trigger when you approach the selected point</string>
+        <string name="add_location_cancel">Cancel</string>
+        <string name="add_location_add">Add Location</string>
+        <string name="add_location_select_prompt">Please select a location on the map</string>
+        <string name="add_location_saved">Location saved successfully!</string>
+        <string name="add_location_enter_address">Enter address</string>
+        <string name="add_location_not_found">Address not found in Chisinau</string>
+        <string name="add_location_error">Error searching for address</string>
+        <string name="add_location_permission_denied">Location permission denied</string>
+
+        <!-- Settings Fragment -->
+        <string name="settings_title">Settings</string>
+        <string name="settings_general">General</string>
+        <string name="settings_units">Units</string>
+        <string name="settings_theme">Theme</string>
+        <string name="settings_geo_alarm">Geo alarm</string>
+        <string name="settings_language">Language</string>
+        <string name="settings_default_perimeter">Default alarm perimeter</string>
+        <string name="settings_location_frequency">Location update frequency</string>
+        <string name="settings_sorting_alarms">Sorting alarms</string>
+        <string name="settings_color_theme">Color theme</string>
+        <string name="settings_support">Support</string>
+        <string name="settings_rate_app">Rate app</string>
+
+        <!-- Units Dialog -->
+        <string name="units_dialog_title">Select Units</string>
+        <string name="units_kilometers">Kilometers</string>
+        <string name="units_kilometers_desc">Metric system (km, m)</string>
+        <string name="units_miles">Miles</string>
+        <string name="units_miles_desc">Imperial system (mi, ft)</string>
+        <string name="units_changed_km">✅ Units changed to Kilometers</string>
+        <string name="units_changed_miles">✅ Units changed to Miles</string>
+
+        <!-- Language Dialog -->
+        <string name="language_dialog_title">Select Language</string>
+        <string name="language_english">English</string>
+        <string name="language_russian">Русский</string>
+        <string name="language_romanian">Română</string>
+        <string name="language_changed">✅ Language changed! Restart the app to apply.</string>
+
+        <!-- About Fragment -->
+        <string name="about_title">About us</string>
+        <string name="about_version">Version 1.0</string>
+        <string name="about_us_title">About us</string>
+        <string name="about_us_text1">We are students of CEITI college, future programmers who enthusiastically create modern and useful applications.</string>
+        <string name="about_us_text2">We love technology, good ideas and that rare moment when the code works without errors.</string>
+        <string name="about_us_text3">Our goal is to develop, learn new things and make the digital world a little more convenient.</string>
+        <string name="about_team">👨‍💻 Team</string>
+        <string name="about_member1">Karakalcheva Elizaveta</string>
+        <string name="about_member2">Ivanoglo Ekaterina</string>
+        <string name="about_member3">Rudov Andrey</string>
+        <string name="about_copyright">© 2025 SleepyTrip</string>
+
+        <!-- Alarm Activity -->
+        <string name="alarm_title">🔔 You have arrived!</string>
+        <string name="alarm_stop">STOP</string>
+        <string name="alarm_disabled">Alarm for \"%s\" disabled</string>
+
+        <!-- Location Item -->
+        <string name="location_radius_label">📍 Radius: %s</string>
+        <string name="location_alarm_on">Alarm for \"%s\" enabled</string>
+        <string name="location_alarm_off">Alarm for \"%s\" disabled</string>
+
+        <!-- Service -->
+        <string name="service_tracking">Location tracking</string>
+        <string name="service_starting">Starting…</string>
+        <string name="service_waiting">Waiting for active locations</string>
+        <string name="service_stopped">Location tracking stopped</string>
+        <string name="service_in_zone">🔔 YOU ARE IN ZONE! %s</string>
+        <string name="service_close_to_zone">⚠️ Close to zone! %s</string>
+        <string name="service_distance">Distance: %s</string>
+
+        <!-- Permissions -->
+        <string name="permission_all_granted">✅ All permissions granted!</string>
+        <string name="permission_needed_title">⚠️ Permissions needed</string>
+        <string name="permission_needed_message">The app requires:\n\n%s</string>
+        <string name="permission_grant">Grant</string>
+        <string name="permission_later">Later</string>
+        <string name="permission_location">• Location</string>
+        <string name="permission_background_location">• Background location</string>
+        <string name="permission_notifications">• Notifications</string>
+        <string name="permission_overlay_title">🔔 Alarm permission</string>
+        <string name="permission_overlay_message">Allow display over other apps for the alarm to work</string>
+        <string name="permission_allow">Allow</string>
+
+        <!-- Common -->
+        <string name="yes">Yes</string>
+        <string name="no">No</string>
+        <string name="ok">OK</string>
+        <string name="cancel">Cancel</string>
+        <string name="my_maps_api_key">My API Key</string>
 </resources>

@@ -1,0 +1,118 @@
+<resources>
+    <string name="app_name">SleepyTrip</string>
+
+    <!-- Navigation -->
+    <string name="navigation_drawer_open">Открыть меню</string>
+    <string name="navigation_drawer_close">Закрыть меню</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_about">О нас</string>
+    <string name="nav_exit">Выход</string>
+
+    <!-- Home Fragment -->
+    <string name="home_title">Мои локации</string>
+    <string name="home_empty_message">📍 Нет сохранённых локаций\n\nНажмите + чтобы добавить</string>
+    <string name="home_select_all">Выбрать все</string>
+    <string name="home_delete">Удалить</string>
+    <string name="home_cancel">Отмена</string>
+    <string name="home_confirm_delete">Удалить</string>
+    <string name="home_deleted">Удалено локаций: %d</string>
+    <string name="home_no_locations_to_delete">Нет локаций для удаления</string>
+    <string name="home_no_locations_to_select">Нет локаций для выбора</string>
+
+    <!-- Add Location Fragment -->
+    <string name="add_location_title">Добавить локацию</string>
+    <string name="add_location_search_hint">Выберите локацию</string>
+    <string name="add_location_radius">Радиус будильника</string>
+    <string name="add_location_radius_hint">Будильник включится когда вы приблизитесь к выбранной точке</string>
+    <string name="add_location_cancel">Отмена</string>
+    <string name="add_location_add">Добавить</string>
+    <string name="add_location_select_prompt">Выберите локацию на карте</string>
+    <string name="add_location_saved">Локация успешно сохранена!</string>
+    <string name="add_location_enter_address">Введите адрес</string>
+    <string name="add_location_not_found">Адрес не найден в Кишинёве</string>
+    <string name="add_location_error">Ошибка при поиске адреса</string>
+    <string name="add_location_permission_denied">Разрешение на геолокацию отклонено</string>
+
+    <!-- Settings Fragment -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_general">Основные</string>
+    <string name="settings_units">Единицы измерения</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_geo_alarm">Гео-будильник</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_default_perimeter">Радиус по умолчанию</string>
+    <string name="settings_location_frequency">Частота обновления GPS</string>
+    <string name="settings_sorting_alarms">Сортировка будильников</string>
+    <string name="settings_color_theme">Цветовая тема</string>
+    <string name="settings_support">Поддержка</string>
+    <string name="settings_rate_app">Оценить приложение</string>
+
+    <!-- Units Dialog -->
+    <string name="units_dialog_title">Выберите единицы</string>
+    <string name="units_kilometers">Километры</string>
+    <string name="units_kilometers_desc">Метрическая система (км, м)</string>
+    <string name="units_miles">Мили</string>
+    <string name="units_miles_desc">Имперская система (ми, фт)</string>
+    <string name="units_changed_km">✅ Единицы изменены на километры</string>
+    <string name="units_changed_miles">✅ Единицы изменены на мили</string>
+
+    <!-- Language Dialog -->
+    <string name="language_dialog_title">Выберите язык</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_romanian">Română</string>
+    <string name="language_changed">✅ Язык изменён! Перезапустите приложение.</string>
+
+    <!-- About Fragment -->
+    <string name="about_title">О нас</string>
+    <string name="about_version">Версия 1.0</string>
+    <string name="about_us_title">О нас</string>
+    <string name="about_us_text1">Мы — студенты колледжа CEITI, будущие программисты, которые с энтузиазмом создают современные и полезные приложения.</string>
+    <string name="about_us_text2">Любим технологии, хорошие идеи и тот редкий момент, когда код работает без ошибок.</string>
+    <string name="about_us_text3">Наша цель — развиваться, учиться новому и делать цифровой мир чуть удобнее.</string>
+    <string name="about_team">👨‍💻 Команда</string>
+    <string name="about_member1">Каракальчева Елизавета</string>
+    <string name="about_member2">Иваногло Екатерина</string>
+    <string name="about_member3">Рудов Андрей</string>
+    <string name="about_copyright">© 2025 SleepyTrip</string>
+
+    <!-- Alarm Activity -->
+    <string name="alarm_title">🔔 Вы прибыли!</string>
+    <string name="alarm_stop">ОСТАНОВИТЬ</string>
+    <string name="alarm_disabled">Будильник для \"%s\" выключен</string>
+
+    <!-- Location Item -->
+    <string name="location_radius_label">📍 Радиус: %s</string>
+    <string name="location_alarm_on">Будильник для \"%s\" включен</string>
+    <string name="location_alarm_off">Будильник для \"%s\" выключен</string>
+
+    <!-- Service -->
+    <string name="service_tracking">Отслеживание локаций</string>
+    <string name="service_starting">Запуск…</string>
+    <string name="service_waiting">Ожидание активных локаций</string>
+    <string name="service_stopped">Отслеживание остановлено</string>
+    <string name="service_in_zone">🔔 ВЫ В ЗОНЕ! %s</string>
+    <string name="service_close_to_zone">⚠️ Близко к зоне! %s</string>
+    <string name="service_distance">Расстояние: %s</string>
+
+    <!-- Permissions -->
+    <string name="permission_all_granted">✅ Все разрешения предоставлены!</string>
+    <string name="permission_needed_title">⚠️ Необходимы разрешения</string>
+    <string name="permission_needed_message">Для работы приложения необходимы:\n\n%s</string>
+    <string name="permission_grant">Предоставить</string>
+    <string name="permission_later">Позже</string>
+    <string name="permission_location">• Геолокация</string>
+    <string name="permission_background_location">• Фоновая геолокация</string>
+    <string name="permission_notifications">• Уведомления</string>
+    <string name="permission_overlay_title">🔔 Разрешение на будильник</string>
+    <string name="permission_overlay_message">Разрешите показ поверх других окон для работы будильника</string>
+    <string name="permission_allow">Разрешить</string>
+
+    <!-- Common -->
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="my_maps_api_key"></string>
+</resources>

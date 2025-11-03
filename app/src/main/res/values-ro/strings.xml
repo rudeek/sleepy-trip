@@ -1,0 +1,118 @@
+<resources>
+    <string name="app_name">SleepyTrip</string>
+
+    <!-- Navigation -->
+    <string name="navigation_drawer_open">Deschide meniul</string>
+    <string name="navigation_drawer_close">Închide meniul</string>
+    <string name="nav_home">Acasă</string>
+    <string name="nav_settings">Setări</string>
+    <string name="nav_about">Despre noi</string>
+    <string name="nav_exit">Ieșire</string>
+
+    <!-- Home Fragment -->
+    <string name="home_title">Locațiile mele</string>
+    <string name="home_empty_message">📍 Nicio locație salvată\n\nApăsați + pentru a adăuga</string>
+    <string name="home_select_all">Selectați tot</string>
+    <string name="home_delete">Șterge</string>
+    <string name="home_cancel">Anulare</string>
+    <string name="home_confirm_delete">Șterge</string>
+    <string name="home_deleted">Șterse: %d locații</string>
+    <string name="home_no_locations_to_delete">Nicio locație de șters</string>
+    <string name="home_no_locations_to_select">Nicio locație de selectat</string>
+
+    <!-- Add Location Fragment -->
+    <string name="add_location_title">Adaugă locație</string>
+    <string name="add_location_search_hint">Selectați locația</string>
+    <string name="add_location_radius">Raza alarmei</string>
+    <string name="add_location_radius_hint">Alarma va porni când vă apropiați de punctul selectat</string>
+    <string name="add_location_cancel">Anulare</string>
+    <string name="add_location_add">Adaugă</string>
+    <string name="add_location_select_prompt">Selectați o locație pe hartă</string>
+    <string name="add_location_saved">Locație salvată cu succes!</string>
+    <string name="add_location_enter_address">Introduceți adresa</string>
+    <string name="add_location_not_found">Adresa nu a fost găsită în Chișinău</string>
+    <string name="add_location_error">Eroare la căutarea adresei</string>
+    <string name="add_location_permission_denied">Permisiunea de localizare refuzată</string>
+
+    <!-- Settings Fragment -->
+    <string name="settings_title">Setări</string>
+    <string name="settings_general">Generale</string>
+    <string name="settings_units">Unități</string>
+    <string name="settings_theme">Temă</string>
+    <string name="settings_geo_alarm">Geo-alarmă</string>
+    <string name="settings_language">Limba</string>
+    <string name="settings_default_perimeter">Raza implicită</string>
+    <string name="settings_location_frequency">Frecvența actualizării GPS</string>
+    <string name="settings_sorting_alarms">Sortarea alarmelor</string>
+    <string name="settings_color_theme">Tema de culoare</string>
+    <string name="settings_support">Suport</string>
+    <string name="settings_rate_app">Evaluează aplicația</string>
+
+    <!-- Units Dialog -->
+    <string name="units_dialog_title">Selectați unitățile</string>
+    <string name="units_kilometers">Kilometri</string>
+    <string name="units_kilometers_desc">Sistem metric (km, m)</string>
+    <string name="units_miles">Mile</string>
+    <string name="units_miles_desc">Sistem imperial (mi, ft)</string>
+    <string name="units_changed_km">✅ Unități schimbate în kilometri</string>
+    <string name="units_changed_miles">✅ Unități schimbate în mile</string>
+
+    <!-- Language Dialog -->
+    <string name="language_dialog_title">Selectați limba</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_romanian">Română</string>
+    <string name="language_changed">✅ Limba schimbată! Reporniți aplicația.</string>
+
+    <!-- About Fragment -->
+    <string name="about_title">Despre noi</string>
+    <string name="about_version">Versiunea 1.0</string>
+    <string name="about_us_title">Despre noi</string>
+    <string name="about_us_text1">Suntem studenți ai colegiului CEITI, viitori programatori care creează cu entuziasm aplicații moderne și utile.</string>
+    <string name="about_us_text2">Iubim tehnologia, ideile bune și acel moment rar când codul funcționează fără erori.</string>
+    <string name="about_us_text3">Scopul nostru este să ne dezvoltăm, să învățăm lucruri noi și să facem lumea digitală puțin mai convenabilă.</string>
+    <string name="about_team">👨‍💻 Echipa</string>
+    <string name="about_member1">Karakalcheva Elizaveta</string>
+    <string name="about_member2">Ivanoglo Ekaterina</string>
+    <string name="about_member3">Rudov Andrey</string>
+    <string name="about_copyright">© 2025 SleepyTrip</string>
+
+    <!-- Alarm Activity -->
+    <string name="alarm_title">🔔 Ați sosit!</string>
+    <string name="alarm_stop">OPREȘTE</string>
+    <string name="alarm_disabled">Alarma pentru \"%s\" dezactivată</string>
+
+    <!-- Location Item -->
+    <string name="location_radius_label">📍 Raza: %s</string>
+    <string name="location_alarm_on">Alarma pentru \"%s\" activată</string>
+    <string name="location_alarm_off">Alarma pentru \"%s\" dezactivată</string>
+
+    <!-- Service -->
+    <string name="service_tracking">Urmărirea locației</string>
+    <string name="service_starting">Pornire…</string>
+    <string name="service_waiting">Așteptarea locațiilor active</string>
+    <string name="service_stopped">Urmărirea oprită</string>
+    <string name="service_in_zone">🔔 SUNTEȚI ÎN ZONĂ! %s</string>
+    <string name="service_close_to_zone">⚠️ Aproape de zonă! %s</string>
+    <string name="service_distance">Distanța: %s</string>
+
+    <!-- Permissions -->
+    <string name="permission_all_granted">✅ Toate permisiunile acordate!</string>
+    <string name="permission_needed_title">⚠️ Permisiuni necesare</string>
+    <string name="permission_needed_message">Aplicația necesită:\n\n%s</string>
+    <string name="permission_grant">Acordă</string>
+    <string name="permission_later">Mai târziu</string>
+    <string name="permission_location">• Localizare</string>
+    <string name="permission_background_location">• Localizare în fundal</string>
+    <string name="permission_notifications">• Notificări</string>
+    <string name="permission_overlay_title">🔔 Permisiune pentru alarmă</string>
+    <string name="permission_overlay_message">Permiteți afișarea peste alte aplicații pentru funcționarea alarmei</string>
+    <string name="permission_allow">Permite</string>
+
+    <!-- Common -->
+    <string name="yes">Da</string>
+    <string name="no">Nu</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Anulare</string>
+    <string name="my_maps_api_key"></string>
+</resources>
