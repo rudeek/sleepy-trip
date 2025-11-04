@@ -168,7 +168,7 @@
 
                 <!-- Rate app -->
                 <LinearLayout
-                    android:id="@+id/setting_rate_app"
+                    android:id="@+id/setting_support"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"

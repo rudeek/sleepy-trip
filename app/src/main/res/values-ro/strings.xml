@@ -123,5 +123,6 @@
     <string name="no">Nu</string>
     <string name="ok">OK</string>
     <string name="cancel">Anulare</string>
+    <string name="support_title">Suport</string>
     <string name="my_maps_api_key"></string>
 </resources>

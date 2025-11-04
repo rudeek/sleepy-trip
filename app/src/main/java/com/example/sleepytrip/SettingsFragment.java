@@ -22,13 +22,8 @@ import java.util.Locale;
 public class SettingsFragment extends Fragment {
 
     private LinearLayout settingUnits;
-    private LinearLayout settingTheme;
     private LinearLayout settingLanguage;
-    private LinearLayout settingDefaultPerimeter;
-    private LinearLayout settingLocationFrequency;
-    private LinearLayout settingSortingAlarms;
-    private LinearLayout settingColorTheme;
-    private LinearLayout settingRateApp;
+    private LinearLayout settingSupport;
 
     private SharedPreferences prefs;
     private static final String PREFS_NAME = "SleepyTripSettings";
@@ -48,7 +43,7 @@ public class SettingsFragment extends Fragment {
         // Находим все элементы настроек
         settingUnits = view.findViewById(R.id.setting_units);
         settingLanguage = view.findViewById(R.id.setting_language);
-        settingRateApp = view.findViewById(R.id.setting_rate_app);
+        settingSupport = view.findViewById(R.id.setting_support);
 
         // === ОБРАБОТЧИКИ КЛИКОВ ===
 
@@ -61,11 +56,7 @@ public class SettingsFragment extends Fragment {
 
 
         // Rate app - оценить приложение
-        settingRateApp.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Rate app: открыть Google Play",
-                    Toast.LENGTH_SHORT).show();
-        });
+        settingSupport.setOnClickListener(v -> showSupportDialog());
 
         return view;
     }
@@ -235,4 +226,17 @@ public class SettingsFragment extends Fragment {
             }
         }
     }
+
+    private void showSupportDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder =
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+
+        builder.setTitle(getString(R.string.support_title));
+        builder.setMessage("📧 Email: rudelove222@gmail.com\n" +
+                "📱 Telegram: @bo1konskiy");
+
+        builder.setPositiveButton(getString(R.string.ok), (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
 }
