@@ -1,6 +1,7 @@
 package com.example.sleepytrip;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -163,6 +164,9 @@ public class SettingsFragment extends Fragment {
         // Сохраняем выбранный язык
         prefs.edit().putString(KEY_LANGUAGE, languageCode).apply();
 
+        // ⭐ ВАЖНО: Сохраняем флаг что мы в настройках
+        prefs.edit().putBoolean("was_in_settings", true).apply();
+
         // Применяем язык
         setLocale(requireContext(), languageCode);
 
@@ -173,6 +177,11 @@ public class SettingsFragment extends Fragment {
 
         // Перезапускаем активность для применения изменений
         requireActivity().recreate();
+        Intent intent = new Intent(requireContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        requireActivity().finish();
+        startActivity(intent);
+
     }
 
     // === МЕТОД ДЛЯ УСТАНОВКИ LOCALE ===

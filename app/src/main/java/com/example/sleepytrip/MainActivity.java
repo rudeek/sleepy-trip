@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
@@ -67,9 +68,10 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         super.onCreate(savedInstanceState);
 
-// === ПРИМЕНЯЕМ СОХРАНЁННЫЙ ЯЗЫК ===
+        // === ПРИМЕНЯЕМ СОХРАНЁННЫЙ ЯЗЫК ===
         String savedLanguage = SettingsFragment.getCurrentLanguage(this);
         SettingsFragment.setLocale(this, savedLanguage);
+
         // Создаём binding - это позволяет обращаться к элементам из XML
         // Например: binding.toolbar вместо findViewById(R.id.toolbar)
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -93,9 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Говорим системе, что наш toolbar теперь ActionBar (верхняя панель приложения)
         setSupportActionBar(toolbar);
-
-
-
 
         // === НАСТРОЙКА DRAWER TOGGLE (КНОПКА ГАМБУРГЕРА) ===
 
@@ -146,9 +145,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Проверяем что это первый запуск (не восстановление после поворота экрана)
         if (savedInstanceState == null) {
-            // Загружаем HomeFragment как начальный экран
-            // true = показываем нижнюю навигацию (BottomAppBar и FAB)
-            replaceFragment(new HomeFragment(), true);
+            // ⭐ ПРОВЕРЯЕМ: Были ли мы в настройках перед перезапуском?
+            SharedPreferences prefs = getSharedPreferences("SleepyTripSettings", MODE_PRIVATE);
+            boolean wasInSettings = prefs.getBoolean("was_in_settings", false);
+
+            if (wasInSettings) {
+                // ⭐ Если были в настройках - возвращаемся туда
+                prefs.edit().putBoolean("was_in_settings", false).apply(); // Сбрасываем флаг
+                replaceFragment(new SettingsFragment(), false);
+            } else {
+                // Иначе загружаем домашний экран
+                replaceFragment(new HomeFragment(), true);
+            }
         }
 
         // === ОБРАБОТКА КЛИКОВ В DRAWER МЕНЮ ===
@@ -188,9 +196,6 @@ public class MainActivity extends AppCompatActivity {
             replaceFragment(new AddLocationFragment(), false);
         });
     }
-
-
-
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -235,13 +240,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
-
     // === ФУНКЦИЯ ДЛЯ ОБРАБОТКИ НАВИГАЦИИ НАЗАД ===
 
     // Эта функция решает что делать когда пользователь хочет вернуться назад
-// Она вызывается и при клике на стрелку в toolbar, и при нажатии системной кнопки "назад"
+    // Она вызывается и при клике на стрелку в toolbar, и при нажатии системной кнопки "назад"
     private void handleBackNavigation() {
         // Сначала проверяем: открыт ли drawer?
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -439,7 +441,6 @@ public class MainActivity extends AppCompatActivity {
             // Разблокируем drawer - теперь его можно открыть свайпом
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
-
             // Убираем старый listener чтобы не было конфликтов
             drawerLayout.removeDrawerListener(drawerToggle);
 
@@ -468,7 +469,6 @@ public class MainActivity extends AppCompatActivity {
             drawerToggle.syncState();
         }
     }
-
 
     // === МЕТОД ДЛЯ ЗАПРОСА ВСЕХ РАЗРЕШЕНИЙ ===
     private void requestAllPermissions() {
@@ -557,5 +557,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }
