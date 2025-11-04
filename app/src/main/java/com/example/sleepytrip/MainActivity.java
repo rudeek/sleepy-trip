@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
+
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         super.onCreate(savedInstanceState);
 
 // === ПРИМЕНЯЕМ СОХРАНЁННЫЙ ЯЗЫК ===
@@ -208,6 +211,27 @@ public class MainActivity extends AppCompatActivity {
             config.locale = locale;
             newBase.getResources().updateConfiguration(config, newBase.getResources().getDisplayMetrics());
             super.attachBaseContext(newBase);
+        }
+
+        // ⭐ НОВОЕ: Применяем тему в зависимости от системных настроек
+        applyThemeBasedOnSystemSettings(newBase);
+    }
+    // ⭐ НОВЫЙ МЕТОД: Автоматическое применение темы
+    private void applyThemeBasedOnSystemSettings(Context context) {
+        int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                // Темная тема включена на устройстве
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+            default:
+                // Светлая тема или тема не определена
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
         }
     }
 

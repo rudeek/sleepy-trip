@@ -1,7 +1,37 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SleepyTrip" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Dark theme -->
+    <style name="Theme.SleepyTrip" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color for dark theme -->
+        <item name="colorPrimary">@color/lavender</item>
+        <item name="colorPrimaryVariant">@color/lavender_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/dark_background</item>
+
+        <!-- Цвета для темной темы -->
+        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="backgroundColor">@color/dark_background</item>
+        <item name="additionMenu">#212121</item>
+        <item name="cardBackgroundColor">@color/dark_card</item>
+        <item name="textColorPrimary">@color/white</item>
+        <item name="textColorSecondary">#B0B0B0</item>
+        <item name="searchContainer">#212121</item>
+        <item name="location">@color/dark_card</item>
+        <item name="mainBackground">@color/dark_background</item>
+    </style>
+
+    <!-- ⭐ СТИЛЬ ДЛЯ BOTTOMSHEET (Темная тема) -->
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>

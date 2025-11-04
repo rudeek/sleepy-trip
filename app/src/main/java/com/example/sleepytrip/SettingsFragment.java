@@ -48,10 +48,7 @@ public class SettingsFragment extends Fragment {
         settingUnits = view.findViewById(R.id.setting_units);
         settingTheme = view.findViewById(R.id.setting_theme);
         settingLanguage = view.findViewById(R.id.setting_language);
-        settingDefaultPerimeter = view.findViewById(R.id.setting_default_perimeter);
-        settingLocationFrequency = view.findViewById(R.id.setting_location_frequency);
         settingSortingAlarms = view.findViewById(R.id.setting_sorting_alarms);
-        settingColorTheme = view.findViewById(R.id.setting_color_theme);
         settingRateApp = view.findViewById(R.id.setting_rate_app);
 
         // === ОБРАБОТЧИКИ КЛИКОВ ===
@@ -69,19 +66,7 @@ public class SettingsFragment extends Fragment {
         // Language - выбор языка
         settingLanguage.setOnClickListener(v -> showLanguageBottomSheet());
 
-        // Default alarm perimeter - радиус будильника по умолчанию
-        settingDefaultPerimeter.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Default perimeter: радиус по умолчанию",
-                    Toast.LENGTH_SHORT).show();
-        });
 
-        // Location update frequency - частота обновления геолокации
-        settingLocationFrequency.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Frequency: частота обновления GPS",
-                    Toast.LENGTH_SHORT).show();
-        });
 
         // Sorting alarms - сортировка будильников
         settingSortingAlarms.setOnClickListener(v -> {
@@ -90,12 +75,6 @@ public class SettingsFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         });
 
-        // Color theme - цветовая тема
-        settingColorTheme.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Color theme: выбор цветовой схемы",
-                    Toast.LENGTH_SHORT).show();
-        });
 
         // Rate app - оценить приложение
         settingRateApp.setOnClickListener(v -> {
@@ -109,7 +88,8 @@ public class SettingsFragment extends Fragment {
 
     // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЕДИНИЦ ===
     private void showUnitsBottomSheet() {
-        BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext());
+        // ⭐ ИСПОЛЬЗУЕМ СТИЛЬ BottomSheetDialogTheme
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
 
         View sheetView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottom_sheet_units, null);
@@ -152,7 +132,8 @@ public class SettingsFragment extends Fragment {
 
     // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЯЗЫКА ===
     private void showLanguageBottomSheet() {
-        BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext());
+        // ⭐ ИСПОЛЬЗУЕМ СТИЛЬ BottomSheetDialogTheme
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
 
         View sheetView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottom_sheet_language, null);

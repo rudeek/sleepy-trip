@@ -6,7 +6,7 @@
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
-    android:backgroundTint="@color/white">
+    app:cardBackgroundColor="?attr/location">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,7 +48,7 @@
                 android:text="Остановка Центральная"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#212121"
+                android:textColor="?attr/textColorPrimary"
                 android:maxLines="2"
                 android:ellipsize="end"/>
 
@@ -59,7 +59,7 @@
                 android:layout_marginTop="4dp"
                 android:text="ул. Пушкина, 15"
                 android:textSize="14sp"
-                android:textColor="#757575"
+                android:textColor="?attr/textColorSecondary"
                 android:maxLines="1"
                 android:ellipsize="end"/>
 

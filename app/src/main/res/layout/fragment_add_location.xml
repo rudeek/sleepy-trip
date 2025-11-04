@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lavender"
+    android:background="?attr/searchContainer"
     tools:context=".AddLocationFragment">
 
     <SearchView
@@ -36,7 +36,7 @@
         android:layout_above="@id/buttons_container"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@color/white"
+        android:background="?attr/additionMenu"
         android:elevation="4dp">
 
         <!-- Заголовок и значение радиуса -->
@@ -99,7 +99,7 @@
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/white"
+        android:background="?attr/backgroundColor"
         android:gravity="center">
 
         <!-- Кнопка Cancel -->

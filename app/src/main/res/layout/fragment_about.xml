@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lavender"
+    android:background="?attr/backgroundColor"
     android:fillViewport="true"
     tools:context=".AboutFragment">
 
@@ -15,13 +15,11 @@
         android:padding="24dp"
         android:gravity="center">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_emoji"
-            android:textSize="64sp"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="16dp"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@mipmap/logologo"
+            android:contentDescription="Profile" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -29,7 +27,7 @@
             android:text="@string/app_name"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:textColor="?attr/textColorPrimary"
             android:layout_marginBottom="8dp"/>
 
         <TextView
@@ -37,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text="@string/app_version"
             android:textSize="14sp"
-            android:textColor="@color/white"
+            android:textColor="?attr/textColorPrimary"
             android:alpha="0.7"
             android:layout_marginBottom="32dp"/>
 
@@ -47,7 +45,7 @@
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:backgroundTint="@color/white">
+            app:cardBackgroundColor="?attr/cardBackgroundColor">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -69,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/about_text_1"
                     android:textSize="15sp"
-                    android:textColor="#424242"
+                    android:textColor="?attr/textColorPrimary"
                     android:lineSpacingExtra="4dp"
                     android:layout_marginBottom="12dp"/>
 
@@ -78,7 +76,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/about_text_2"
                     android:textSize="15sp"
-                    android:textColor="#424242"
+                    android:textColor="?attr/textColorPrimary"
                     android:lineSpacingExtra="4dp"
                     android:layout_marginBottom="12dp"/>
 
@@ -87,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/about_text_3"
                     android:textSize="15sp"
-                    android:textColor="#424242"
+                    android:textColor="?attr/textColorPrimary"
                     android:lineSpacingExtra="4dp"/>
 
             </LinearLayout>
@@ -100,7 +98,7 @@
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:backgroundTint="@color/white">
+            app:cardBackgroundColor="?attr/cardBackgroundColor">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -141,7 +139,7 @@
                         android:text="@string/member_name_1"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="#424242"/>
+                        android:textColor="?attr/textColorPrimary"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -168,7 +166,7 @@
                         android:text="@string/member_name_2"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="#424242"/>
+                        android:textColor="?attr/textColorPrimary"/>
                 </LinearLayout>
 
                 <TextView
@@ -176,7 +174,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/app_copyright"
                     android:textSize="13sp"
-                    android:textColor="#757575"
+                    android:textColor="?attr/textColorSecondary"
                     android:gravity="center"
                     android:alpha="0.7"/>
             </LinearLayout>

@@ -36,11 +36,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/white">
+        app:cardBackgroundColor="?attr/cardBackgroundColor">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -78,14 +77,14 @@
                     android:text="Kilometers"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"/>
+                    android:textColor="?attr/textColorPrimary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Metric system (km, m)"
                     android:textSize="14sp"
-                    android:textColor="#757575"
+                    android:textColor="?attr/textColorSecondary"
                     android:layout_marginTop="4dp"/>
 
             </LinearLayout>
@@ -109,11 +108,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/white">
+        app:cardBackgroundColor="?attr/cardBackgroundColor">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -151,14 +149,14 @@
                     android:text="Miles"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"/>
+                    android:textColor="?attr/textColorPrimary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Imperial system (mi, ft)"
                     android:textSize="14sp"
-                    android:textColor="#757575"
+                    android:textColor="?attr/textColorSecondary"
                     android:layout_marginTop="4dp"/>
 
             </LinearLayout>

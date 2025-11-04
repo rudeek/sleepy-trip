@@ -11,6 +11,27 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+
+        <!-- Цвета для светлой темы -->
+        <item name="android:windowBackground">@color/lavender</item>
+        <item name="backgroundColor">@color/white</item>
+        <item name="cardBackgroundColor">#ebeced</item>
+        <item name="textColorPrimary">@android:color/black</item>
+        <item name="textColorSecondary">#757575</item>
+        <item name="additionMenu">@color/white</item>
+        <item name="searchContainer">@color/lavender</item>
+        <item name="location">@color/white</item>
+        <item name="mainBackground">@color/lavender</item>
+    </style>
+
+    <!-- ⭐ СТИЛЬ ДЛЯ BOTTOMSHEET (Светлая тема) -->
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>
