@@ -38,15 +38,10 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_general">Основные</string>
     <string name="settings_units">Единицы измерения</string>
-    <string name="settings_theme">Тема</string>
     <string name="settings_geo_alarm">Гео-будильник</string>
     <string name="settings_language">Язык</string>
-    <string name="settings_default_perimeter">Радиус по умолчанию</string>
-    <string name="settings_location_frequency">Частота обновления GPS</string>
-    <string name="settings_sorting_alarms">Сортировка будильников</string>
-    <string name="settings_color_theme">Цветовая тема</string>
     <string name="settings_support">Поддержка</string>
-    <string name="settings_rate_app">Оценить приложение</string>
+    <string name="settings_contact_support">Помощь</string>
 
     <!-- Units Dialog -->
     <string name="units_dialog_title">Выберите единицы</string>

@@ -46,9 +46,7 @@ public class SettingsFragment extends Fragment {
 
         // Находим все элементы настроек
         settingUnits = view.findViewById(R.id.setting_units);
-        settingTheme = view.findViewById(R.id.setting_theme);
         settingLanguage = view.findViewById(R.id.setting_language);
-        settingSortingAlarms = view.findViewById(R.id.setting_sorting_alarms);
         settingRateApp = view.findViewById(R.id.setting_rate_app);
 
         // === ОБРАБОТЧИКИ КЛИКОВ ===
@@ -56,24 +54,9 @@ public class SettingsFragment extends Fragment {
         // Units - выбор единиц измерения (км/мили)
         settingUnits.setOnClickListener(v -> showUnitsBottomSheet());
 
-        // Theme - выбор темы приложения
-        settingTheme.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Theme: светлая/тёмная тема",
-                    Toast.LENGTH_SHORT).show();
-        });
-
         // Language - выбор языка
         settingLanguage.setOnClickListener(v -> showLanguageBottomSheet());
 
-
-
-        // Sorting alarms - сортировка будильников
-        settingSortingAlarms.setOnClickListener(v -> {
-            Toast.makeText(requireContext(),
-                    "Sorting: по дате/имени/расстоянию",
-                    Toast.LENGTH_SHORT).show();
-        });
 
 
         // Rate app - оценить приложение

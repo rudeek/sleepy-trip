@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/backgroundColor"
+    android:background="?attr/mainBackground"
     android:fillViewport="true"
     tools:context=".SettingsFragment">
 
@@ -76,65 +76,11 @@
 
                 </LinearLayout>
 
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="56dp"
-                    android:background="?attr/textColorSecondary"
-                    android:alpha="0.2"/>
 
-                <!-- Theme -->
-                <LinearLayout
-                    android:id="@+id/setting_theme"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/baseline_settings_24"
-                        app:tint="@color/lavender"/>
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="@string/settings_theme"
-                        android:textSize="15sp"
-                        android:textColor="?attr/textColorPrimary"/>
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/baseline_arrow_back_24"
-                        android:rotation="180"
-                        app:tint="?attr/textColorSecondary"/>
-
-                </LinearLayout>
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
-
-        <!-- СЕКЦИЯ: GEO ALARM -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_geo_alarm"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="?attr/textColorPrimary"
-            android:alpha="0.7"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="4dp"/>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -150,85 +96,45 @@
                 android:orientation="vertical">
 
                 <!-- Language -->
+
+                <!-- Divider -->
                 <LinearLayout
                     android:id="@+id/setting_language"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="?attr/selectableItemBackground">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/baseline_settings_24"
-                        app:tint="@color/lavender"/>
+                        android:src="@drawable/baseline_language_24"
+                        app:tint="@color/lavender" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="16dp"
+                        android:layout_weight="1"
                         android:text="@string/settings_language"
-                        android:textSize="15sp"
-                        android:textColor="?attr/textColorPrimary"/>
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="15sp" />
 
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/baseline_arrow_back_24"
                         android:rotation="180"
-                        app:tint="?attr/textColorSecondary"/>
+                        android:src="@drawable/baseline_arrow_back_24"
+                        app:tint="?attr/textColorSecondary" />
 
                 </LinearLayout>
 
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="56dp"
-                    android:background="?attr/textColorSecondary"
-                    android:alpha="0.2"/>
 
 
-                <!-- Sorting alarms -->
-                <LinearLayout
-                    android:id="@+id/setting_sorting_alarms"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/baseline_settings_24"
-                        app:tint="@color/lavender"/>
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="@string/settings_sorting_alarms"
-                        android:textSize="15sp"
-                        android:textColor="?attr/textColorPrimary"/>
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/baseline_arrow_back_24"
-                        android:rotation="180"
-                        app:tint="?attr/textColorSecondary"/>
-
-                </LinearLayout>
 
 
             </LinearLayout>
@@ -283,7 +189,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="@string/settings_rate_app"
+                        android:text="@string/settings_contact_support"
                         android:textSize="15sp"
                         android:textColor="?attr/textColorPrimary"/>
 

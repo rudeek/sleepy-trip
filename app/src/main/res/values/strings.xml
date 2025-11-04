@@ -38,15 +38,10 @@
         <string name="settings_title">Settings</string>
         <string name="settings_general">General</string>
         <string name="settings_units">Units</string>
-        <string name="settings_theme">Theme</string>
         <string name="settings_geo_alarm">Geo alarm</string>
         <string name="settings_language">Language</string>
-        <string name="settings_default_perimeter">Default alarm perimeter</string>
-        <string name="settings_location_frequency">Location update frequency</string>
-        <string name="settings_sorting_alarms">Sorting alarms</string>
-        <string name="settings_color_theme">Color theme</string>
         <string name="settings_support">Support</string>
-        <string name="settings_rate_app">Rate app</string>
+        <string name="settings_contact_support">Help</string>
 
         <!-- Units Dialog -->
         <string name="units_dialog_title">Select Units</string>
