@@ -3,13 +3,8 @@ package com.example.sleepytrip;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -22,8 +17,6 @@ import java.util.List;
 
 public class AlarmActivity extends AppCompatActivity {
 
-    private Ringtone ringtone;
-    private Vibrator vibrator;
     private AppDatabase db;
 
     private String locationName;
@@ -57,15 +50,10 @@ public class AlarmActivity extends AppCompatActivity {
         tvAlarmTitle.setText(getString(R.string.alarm_title));
         tvAlarmMessage.setText(locationName + "\n" + locationAddress);
 
-        //запускает звук и вибрацию будильника
-        playAlarmSound();
-        startVibration();
 
         //обработчик кнопки "остановить"
         btnStopAlarm.setOnClickListener(v -> {
             stopServiceAlarm();
-            stopAlarmSound();
-            stopVibration();
             disableLocationAndCheckService();
             finish();
         });
@@ -201,52 +189,14 @@ public class AlarmActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void playAlarmSound() {
-        //воспроизводит звук будильника
-        try {
-            Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            if (alarmUri == null) {
-                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            }
-            ringtone = RingtoneManager.getRingtone(this, alarmUri);
-            if (ringtone != null) ringtone.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void stopAlarmSound() {
-        //останавливает звук будильника
-        if (ringtone != null && ringtone.isPlaying()) ringtone.stop();
-    }
-
-    private void startVibration() {
-        //запускает вибрацию при срабатывании будильника
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator != null && vibrator.hasVibrator()) {
-            long[] pattern = {0, 500, 200, 500, 200, 500};
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
-            } else {
-                vibrator.vibrate(pattern, 0);
-            }
-        }
-    }
-
-    private void stopVibration() {
-        //останавливает вибрацию
-        if (vibrator != null) vibrator.cancel();
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        //останавливает звук и вибрацию перед уничтожением активности
-        stopAlarmSound();
-        stopVibration();
+        // Отправляет broadcast для сброса состояния и остановки звука
+        stopServiceAlarm();
 
-        //отправляет broadcast для сброса состояния локации
         int locationId = getIntent().getIntExtra("location_id", -1);
         if (locationId != -1) {
             Intent resetIntent = new Intent("LOCATION_RESET");
