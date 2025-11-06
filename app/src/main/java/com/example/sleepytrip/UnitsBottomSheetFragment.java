@@ -27,19 +27,19 @@ public class UnitsBottomSheetFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bottom_sheet_units, container, false);
 
-        // Получаем SharedPreferences
+        //получаем SharedPreferences
         SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
-        // Находим элементы
+        //находим элементы
         LinearLayout optionKilometers = view.findViewById(R.id.option_kilometers);
         LinearLayout optionMiles = view.findViewById(R.id.option_miles);
         ImageView checkKilometers = view.findViewById(R.id.check_kilometers);
         ImageView checkMiles = view.findViewById(R.id.check_miles);
 
-        // Получаем текущие настройки
+        //получаем текущие настройки
         String currentUnits = prefs.getString(KEY_UNITS, UNITS_KM);
 
-        // Устанавливаем галочки
+        //устанавливаем галочки
         if (currentUnits.equals(UNITS_KM)) {
             checkKilometers.setVisibility(View.VISIBLE);
             checkMiles.setVisibility(View.GONE);
@@ -48,17 +48,17 @@ public class UnitsBottomSheetFragment extends BottomSheetDialogFragment {
             checkMiles.setVisibility(View.VISIBLE);
         }
 
-        // Обработчик для километров
+        //обработчик для километров
         optionKilometers.setOnClickListener(v -> {
             prefs.edit().putString(KEY_UNITS, UNITS_KM).apply();
-            Toast.makeText(requireContext(), "✅ Units changed to Kilometers", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "✅ units changed to kilometers", Toast.LENGTH_SHORT).show();
             dismiss();
         });
 
-        // Обработчик для миль
+        //обработчик для миль
         optionMiles.setOnClickListener(v -> {
             prefs.edit().putString(KEY_UNITS, UNITS_MILES).apply();
-            Toast.makeText(requireContext(), "✅ Units changed to Miles", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "✅ units changed to miles", Toast.LENGTH_SHORT).show();
             dismiss();
         });
 

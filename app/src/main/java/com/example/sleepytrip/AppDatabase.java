@@ -11,8 +11,10 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
 
+    //возвращает DAO для работы с локациями
     public abstract LocationDao locationDao();
 
+    //возвращает один и тот же экземпляр базы данных
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
@@ -20,8 +22,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "sleepytrip_database"
                     )
-                    .allowMainThreadQueries()
-                    .fallbackToDestructiveMigration()  // ВАЖНО: пересоздаёт БД при изменении версии
+                    .allowMainThreadQueries()  //разрешает запросы в главном потоке
+                    .fallbackToDestructiveMigration()  //важно: пересоздаёт БД при изменении версии
                     .build();
         }
         return instance;

@@ -41,25 +41,25 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Binding для доступа к элементам из XML (вместо findViewById)
+    //binding для доступа к элементам из xml (вместо findviewbyid)
     ActivityMainBinding binding;
 
-    // Drawer - это боковое выдвижное меню слева
+    //drawer - это боковое выдвижное меню слева
     private DrawerLayout drawerLayout;
 
-    // NavigationView - это само содержимое drawer меню (пункты меню)
+    //navigationview - это само содержимое drawer меню (пункты меню)
     private NavigationView navigationView;
 
-    // Toolbar - это верхняя панель приложения (где заголовок и кнопки)
+    //toolbar - это верхняя панель приложения (где заголовок и кнопки)
     private Toolbar toolbar;
 
-    // ActionBarDrawerToggle - специальный класс который управляет кнопкой гамбургера
-    // и анимацией открытия/закрытия drawer
+    //actionbardrawertoggle - специальный класс который управляет кнопкой гамбургера
+    //и анимацией открытия/закрытия drawer
     private ActionBarDrawerToggle drawerToggle;
 
-    // Флаг который показывает, в каком режиме мы сейчас:
-    // false = показываем гамбургер (можно открыть drawer)
-    // true = показываем стрелку назад (drawer заблокирован)
+    //флаг который показывает, в каком режиме мы сейчас:
+    //false = показываем гамбургер (можно открыть drawer)
+    //true = показываем стрелку назад (drawer заблокирован)
     private boolean isBackButtonMode = false;
 
     @SuppressLint("ResourceType")
@@ -68,138 +68,138 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         super.onCreate(savedInstanceState);
 
-        // === ПРИМЕНЯЕМ СОХРАНЁННЫЙ ЯЗЫК ===
+        // === применяем сохранённый язык ===
         String savedLanguage = SettingsFragment.getCurrentLanguage(this);
         SettingsFragment.setLocale(this, savedLanguage);
 
-        // Создаём binding - это позволяет обращаться к элементам из XML
-        // Например: binding.toolbar вместо findViewById(R.id.toolbar)
+        //создаём binding - это позволяет обращаться к элементам из xml
+        //например: binding.toolbar вместо findviewbyid(r.id.toolbar)
         binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-        // Устанавливаем наш layout как содержимое активности
+        //устанавливаем наш layout как содержимое активности
         setContentView(binding.getRoot());
 
-        // === ЗАПРАШИВАЕМ ВСЕ РАЗРЕШЕНИЯ СРАЗУ ПРИ ЗАПУСКЕ ===
+        // === запрашиваем все разрешения сразу при запуске ===
         requestAllPermissions();
 
-        // === ИНИЦИАЛИЗАЦИЯ ЭЛЕМЕНТОВ ===
+        // === инициализация элементов ===
 
-        // Получаем ссылку на DrawerLayout из нашего XML
+        //получаем ссылку на drawerlayout из нашего xml
         drawerLayout = binding.drawerLayout;
 
-        // Получаем ссылку на NavigationView (боковое меню)
+        //получаем ссылку на navigationview (боковое меню)
         navigationView = binding.navView;
 
-        // Получаем ссылку на Toolbar (верхняя панель)
+        //получаем ссылку на toolbar (верхняя панель)
         toolbar = binding.toolbar;
 
-        // Говорим системе, что наш toolbar теперь ActionBar (верхняя панель приложения)
+        //говорим системе, что наш toolbar теперь actionbar (верхняя панель приложения)
         setSupportActionBar(toolbar);
 
-        // === НАСТРОЙКА DRAWER TOGGLE (КНОПКА ГАМБУРГЕРА) ===
+        // === настройка drawer toggle (кнопка гамбургера) ===
 
-        // Создаём ActionBarDrawerToggle - это магия которая:
-        // 1. Добавляет иконку гамбургера в toolbar
-        // 2. Открывает/закрывает drawer при клике на гамбургер
-        // 3. Анимирует превращение гамбургера в стрелку
+        //создаём actionbardrawertoggle - это магия которая:
+        //1. добавляет иконку гамбургера в toolbar
+        //2. открывает/закрывает drawer при клике на гамбургер
+        //3. анимирует превращение гамбургера в стрелку
         drawerToggle = new ActionBarDrawerToggle(
-                this,                                    // Контекст (наша активность)
-                drawerLayout,                            // DrawerLayout который нужно открывать
-                toolbar,                                 // Toolbar куда добавить кнопку
-                R.string.navigation_drawer_open,         // Описание для accessibility (для незрячих)
-                R.string.navigation_drawer_close         // Описание для accessibility
+                this,                                    //контекст (наша активность)
+                drawerLayout,                            //drawerlayout который нужно открывать
+                toolbar,                                 //toolbar куда добавить кнопку
+                R.string.navigation_drawer_open,         //описание для accessibility (для незрячих)
+                R.string.navigation_drawer_close         //описание для accessibility
         );
 
-        // Добавляем drawerToggle как слушателя событий drawer'а
-        // Теперь он будет знать когда drawer открывается/закрывается
+        //добавляем drawertoggle как слушателя событий drawer'а
+        //теперь он будет знать когда drawer открывается/закрывается
         drawerLayout.addDrawerListener(drawerToggle);
 
-        // Синхронизируем состояние - обновляем иконку гамбургера
+        //синхронизируем состояние - обновляем иконку гамбургера
         drawerToggle.syncState();
 
-        // === НАСТРОЙКА ACTION BAR (ВЕРХНЕЙ ПАНЕЛИ) ===
+        // === настройка action bar (верхней панели) ===
 
-        // Проверяем что ActionBar существует
+        //проверяем что actionbar существует
         if (getSupportActionBar() != null) {
-            // Устанавливаем заголовок приложения в toolbar
+            //устанавливаем заголовок приложения в toolbar
             getSupportActionBar().setTitle("SleepyTrip");
 
-            // Включаем кнопку "home" (это либо гамбургер, либо стрелка назад)
+            //включаем кнопку "home" (это либо гамбургер, либо стрелка назад)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // === ОБРАБОТКА СИСТЕМНОЙ КНОПКИ "НАЗАД" ===
+        // === обработка системной кнопки "назад" ===
 
-        // В Android 13+ кнопку "назад" нужно обрабатывать через OnBackPressedCallback
-        // Это новый способ (старый onBackPressed() устарел)
+        //в android 13+ кнопку "назад" нужно обрабатывать через onbackpressedcallback
+        //это новый способ (старый onbackpressed() устарел)
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // Когда пользователь нажимает системную кнопку "назад" на телефоне
-                // вызываем нашу функцию которая решает что делать
+                //когда пользователь нажимает системную кнопку "назад" на телефоне
+                //вызываем нашу функцию которая решает что делать
                 handleBackNavigation();
             }
         });
 
-        // === ЗАГРУЗКА НАЧАЛЬНОГО ФРАГМЕНТА ===
+        // === загрузка начального фрагмента ===
 
-        // Проверяем что это первый запуск (не восстановление после поворота экрана)
+        //проверяем что это первый запуск (не восстановление после поворота экрана)
         if (savedInstanceState == null) {
-            // ⭐ ПРОВЕРЯЕМ: Были ли мы в настройках перед перезапуском?
+            //проверяем: были ли мы в настройках перед перезапуском?
             SharedPreferences prefs = getSharedPreferences("SleepyTripSettings", MODE_PRIVATE);
             boolean wasInSettings = prefs.getBoolean("was_in_settings", false);
 
             if (wasInSettings) {
-                // ⭐ Если были в настройках - возвращаемся туда
-                prefs.edit().putBoolean("was_in_settings", false).apply(); // Сбрасываем флаг
+                //если были в настройках - возвращаемся туда
+                prefs.edit().putBoolean("was_in_settings", false).apply(); //сбрасываем флаг
                 replaceFragment(new SettingsFragment(), false);
             } else {
-                // Иначе загружаем домашний экран
+                //иначе загружаем домашний экран
                 replaceFragment(new HomeFragment(), true);
             }
         }
 
-        // === ОБРАБОТКА КЛИКОВ В DRAWER МЕНЮ ===
+        // === обработка кликов в drawer меню ===
 
-        // Устанавливаем слушателя на клики по пунктам бокового меню
+        //устанавливаем слушателя на клики по пунктам бокового меню
         navigationView.setNavigationItemSelectedListener(item -> {
-            // Получаем ID нажатого пункта меню
+            //получаем id нажатого пункта меню
             int itemId = item.getItemId();
 
-            // Проверяем какой пункт меню нажали и открываем нужный фрагмент
+            //проверяем какой пункт меню нажали и открываем нужный фрагмент
             if (itemId == R.id.drawer_settings) {
-                // Если нажали "Настройки" - открываем SettingsFragment
-                // false = скрываем нижнюю навигацию на этом экране
+                //если нажали "настройки" - открываем settingsfragment
+                //false = скрываем нижнюю навигацию на этом экране
                 replaceFragment(new SettingsFragment(), false);
             } else if (itemId == R.id.drawer_about) {
-                // Если нажали "О приложении" - открываем AboutFragment
+                //если нажали "о приложении" - открываем aboutfragment
                 replaceFragment(new AboutFragment(), false);
             } else if (itemId == R.id.drawer_exit) {
-                // Если нажали "Выход" - закрываем приложение
+                //если нажали "выход" - закрываем приложение
                 finish();
             }
 
-            // После выбора пункта меню закрываем drawer
-            // GravityCompat.START означает "слева" (учитывая разные языки)
+            //после выбора пункта меню закрываем drawer
+            //gravitycompat.start означает "слева" (учитывая разные языки)
             drawerLayout.closeDrawer(GravityCompat.START);
 
-            // Возвращаем true = событие обработано
+            //возвращаем true = событие обработано
             return true;
         });
 
-        // === ОБРАБОТКА КЛИКА НА FAB (КРУГЛУЮ КНОПКУ ВНИЗУ) ===
+        // === обработка клика на fab (круглую кнопку внизу) ===
 
-        // Когда пользователь нажимает на FAB (Floating Action Button)
+        //когда пользователь нажимает на fab (floating action button)
         binding.fabAdd.setOnClickListener(v -> {
-            // Открываем фрагмент для добавления новой локации
-            // false = скрываем нижнюю навигацию
+            //открываем фрагмент для добавления новой локации
+            //false = скрываем нижнюю навигацию
             replaceFragment(new AddLocationFragment(), false);
         });
     }
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        // Применяем язык перед созданием контекста
+        //применяем язык перед созданием контекста
         String savedLanguage = newBase.getSharedPreferences("SleepyTripSettings", Context.MODE_PRIVATE)
                 .getString("language", "en");
 
@@ -218,122 +218,122 @@ public class MainActivity extends AppCompatActivity {
             super.attachBaseContext(newBase);
         }
 
-        // ⭐ НОВОЕ: Применяем тему в зависимости от системных настроек
+        //применяем тему в зависимости от системных настроек
         applyThemeBasedOnSystemSettings(newBase);
     }
-    // ⭐ НОВЫЙ МЕТОД: Автоматическое применение темы
+    //автоматическое применение темы
     private void applyThemeBasedOnSystemSettings(Context context) {
         int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
 
         switch (nightModeFlags) {
             case Configuration.UI_MODE_NIGHT_YES:
-                // Темная тема включена на устройстве
+                //темная тема включена на устройстве
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
 
             case Configuration.UI_MODE_NIGHT_NO:
             case Configuration.UI_MODE_NIGHT_UNDEFINED:
             default:
-                // Светлая тема или тема не определена
+                //светлая тема или тема не определена
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
         }
     }
 
-    // === ФУНКЦИЯ ДЛЯ ОБРАБОТКИ НАВИГАЦИИ НАЗАД ===
+    // === функция для обработки навигации назад ===
 
-    // Эта функция решает что делать когда пользователь хочет вернуться назад
-    // Она вызывается и при клике на стрелку в toolbar, и при нажатии системной кнопки "назад"
+    //эта функция решает что делать когда пользователь хочет вернуться назад
+    //она вызывается и при клике на стрелку в toolbar, и при нажатии системной кнопки "назад"
     private void handleBackNavigation() {
-        // Сначала проверяем: открыт ли drawer?
+        //сначала проверяем: открыт ли drawer?
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            // Если drawer открыт - просто закрываем его
+            //если drawer открыт - просто закрываем его
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            // Если drawer закрыт, проверяем на каком мы фрагменте
+            //если drawer закрыт, проверяем на каком мы фрагменте
 
-            // Получаем текущий фрагмент который сейчас показывается
+            //получаем текущий фрагмент который сейчас показывается
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout);
 
-            // Проверяем: это НЕ домашняя страница?
+            //проверяем: это не домашняя страница?
             if (!(currentFragment instanceof HomeFragment)) {
-                // Если мы не на домашней странице - возвращаемся на неё
-                // replaceFragment() сам установит правильный заголовок и включит гамбургер
-                replaceFragment(new HomeFragment(), true);  // true = показываем bottom navigation
+                //если мы не на домашней странице - возвращаемся на неё
+                //replacefragment() сам установит правильный заголовок и включит гамбургер
+                replaceFragment(new HomeFragment(), true);  //true = показываем bottom navigation
             } else {
-                // Если мы уже на домашней странице - выходим из приложения
+                //если мы уже на домашней странице - выходим из приложения
                 finish();
             }
         }
     }
 
-    // === ОБРАБОТКА КЛИКОВ НА КНОПКИ В TOOLBAR ===
+    // === обработка кликов на кнопки в toolbar ===
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Эта функция вызывается когда пользователь нажимает на кнопки в toolbar
+        //эта функция вызывается когда пользователь нажимает на кнопки в toolbar
 
-        // Проверяем что нажали именно на home кнопку (гамбургер или стрелка)
+        //проверяем что нажали именно на home кнопку (гамбургер или стрелка)
         if (item.getItemId() == android.R.id.home) {
-            // Проверяем в каком мы режиме
+            //проверяем в каком мы режиме
             if (isBackButtonMode) {
-                // Режим "стрелка назад" - возвращаемся на главную
+                //режим "стрелка назад" - возвращаемся на главную
                 handleBackNavigation();
-                return true;  // true = событие обработано
+                return true;  //true = событие обработано
             } else {
-                // Режим "гамбургер" - передаём обработку drawerToggle
-                // Он сам откроет/закроет drawer
+                //режим "гамбургер" - передаём обработку drawertoggle
+                //он сам откроет/закроет drawer
                 return drawerToggle.onOptionsItemSelected(item);
             }
         }
-        // Если нажали на другую кнопку - передаём обработку родителю
+        //если нажали на другую кнопку - передаём обработку родителю
         return super.onOptionsItemSelected(item);
     }
 
-    // === СИНХРОНИЗАЦИЯ СОСТОЯНИЯ ПОСЛЕ СОЗДАНИЯ ===
+    // === синхронизация состояния после создания ===
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Синхронизируем состояние drawer toggle после полной инициализации активности
-        // Это гарантирует что иконка гамбургера показывается правильно
+        //синхронизируем состояние drawer toggle после полной инициализации активности
+        //это гарантирует что иконка гамбургера показывается правильно
         drawerToggle.syncState();
     }
 
-    // === ФУНКЦИЯ ДЛЯ ЗАМЕНЫ ФРАГМЕНТА ===
+    // === функция для замены фрагмента ===
 
-    // Эта функция меняет текущий фрагмент на новый
-    // fragment - какой фрагмент показать
-    // showBottomNav - показывать ли нижнюю навигацию (BottomAppBar и FAB)
+    //эта функция меняет текущий фрагмент на новый
+    //fragment - какой фрагмент показать
+    //showbottomnav - показывать ли нижнюю навигацию (bottomappbar и fab)
     public void replaceFragment(Fragment fragment, boolean showBottomNav) {
-        // Получаем FragmentManager - он управляет фрагментами
+        //получаем fragmentmanager - он управляет фрагментами
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        // Начинаем транзакцию (группу изменений с фрагментами)
+        //начинаем транзакцию (группу изменений с фрагментами)
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        // === ДОБАВЛЯЕМ АНИМАЦИИ ===
-        // setCustomAnimations(enter, exit, popEnter, popExit)
-        // enter - анимация появления нового фрагмента
-        // exit - анимация исчезновения старого фрагмента
-        // popEnter - анимация при нажатии "назад" (появление)
-        // popExit - анимация при нажатии "назад" (исчезновение)
+        // === добавляем анимации ===
+        //setcustomanimations(enter, exit, popenter, popexit)
+        //enter - анимация появления нового фрагмента
+        //exit - анимация исчезновения старого фрагмента
+        //popenter - анимация при нажатии "назад" (появление)
+        //popexit - анимация при нажатии "назад" (исчезновение)
         fragmentTransaction.setCustomAnimations(
-                R.anim.slide_in_right,   // Новый въезжает справа
-                R.anim.slide_out_left,   // Старый уезжает влево
-                R.anim.slide_in_left,    // При возврате въезжает слева
-                R.anim.slide_out_right   // При возврате уезжает вправо
+                R.anim.slide_in_right,   //новый въезжает справа
+                R.anim.slide_out_left,   //старый уезжает влево
+                R.anim.slide_in_left,    //при возврате въезжает слева
+                R.anim.slide_out_right   //при возврате уезжает вправо
         );
 
-        // Заменяем фрагмент в контейнере frame_layout на новый
+        //заменяем фрагмент в контейнере frame_layout на новый
         fragmentTransaction.replace(R.id.frame_layout, fragment);
 
-        // Применяем изменения (показываем новый фрагмент)
+        //применяем изменения (показываем новый фрагмент)
         fragmentTransaction.commit();
 
-        // Решаем показывать или скрывать нижнюю навигацию
+        //решаем показывать или скрывать нижнюю навигацию
         if (showBottomNav) {
-            // Плавно показываем
+            //плавно показываем
             binding.bottomAppBar.animate()
                     .alpha(1f)
                     .translationY(0)
@@ -341,14 +341,14 @@ public class MainActivity extends AppCompatActivity {
                     .withStartAction(() -> binding.bottomAppBar.setVisibility(View.VISIBLE))
                     .start();
 
-            // Для FAB используем только alpha (без scale!)
+            //для fab используем только alpha (без scale!)
             binding.fabAdd.animate()
                     .alpha(1f)
                     .setDuration(300)
                     .withStartAction(() -> binding.fabAdd.setVisibility(View.VISIBLE))
                     .start();
 
-            // ДОБАВЬТЕ ЭТО: Добавляем padding снизу для frame_layout
+            //добавьте это: добавляем padding снизу для frame_layout
             binding.frameLayout.post(() -> {
                 int bottomBarHeight = binding.bottomAppBar.getHeight();
                 binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
             setToolbarTitle(getString(R.string.home_title));
             enableBackButton(false);
         } else {
-            // Плавно скрываем
+            //плавно скрываем
             binding.bottomAppBar.animate()
                     .alpha(0f)
                     .translationY(binding.bottomAppBar.getHeight())
@@ -365,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                     .withEndAction(() -> binding.bottomAppBar.setVisibility(View.GONE))
                     .start();
 
-            // Для FAB используем только alpha (без scale!)
+            //для fab используем только alpha (без scale!)
             binding.fabAdd.animate()
                     .alpha(0f)
                     .setDuration(300)
@@ -374,8 +374,8 @@ public class MainActivity extends AppCompatActivity {
 
             binding.frameLayout.setPadding(0, 0, 0, 0);
 
-            // ВАЖНО: Если скрываем bottom navigation, значит это Settings/About
-            // Определяем какой заголовок показать
+            //важно: если скрываем bottom navigation, значит это settings/about
+            //определяем какой заголовок показать
             if (fragment instanceof SettingsFragment) {
                 setToolbarTitle(getString(R.string.settings_title));
                 enableBackButton(true);
@@ -389,62 +389,62 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // === ФУНКЦИЯ ДЛЯ ИЗМЕНЕНИЯ ЗАГОЛОВКА TOOLBAR ===
+    // === функция для изменения заголовка toolbar ===
 
-    // Эта функция меняет текст в toolbar (например "SleepyTrip" на "Settings")
+    //эта функция меняет текст в toolbar (например "sleepytrip" на "settings")
     public void setToolbarTitle(String title) {
-        // Проверяем что ActionBar существует
+        //проверяем что actionbar существует
         if (getSupportActionBar() != null) {
-            // Устанавливаем новый заголовок
+            //устанавливаем новый заголовок
             getSupportActionBar().setTitle(title);
         }
     }
 
-    // === ФУНКЦИЯ ДЛЯ ПЕРЕКЛЮЧЕНИЯ МЕЖДУ ГАМБУРГЕРОМ И СТРЕЛКОЙ НАЗАД ===
+    // === функция для переключения между гамбургером и стрелкой назад ===
 
-    // enable = true: показываем стрелку назад (для страниц Settings, About)
-    // enable = false: показываем гамбургер (для домашней страницы)
+    //enable = true: показываем стрелку назад (для страниц settings, about)
+    //enable = false: показываем гамбургер (для домашней страницы)
     public void enableBackButton(boolean enable) {
-        // Если состояние не изменилось - ничего не делаем
+        //если состояние не изменилось - ничего не делаем
         if (isBackButtonMode == enable) {
             return;
         }
 
-        // Запоминаем текущий режим в флаг
+        //запоминаем текущий режим в флаг
         isBackButtonMode = enable;
 
         if (enable) {
-            // === РЕЖИМ "СТРЕЛКА НАЗАД" ===
+            // === режим "стрелка назад" ===
 
-            // Блокируем drawer - теперь его нельзя открыть свайпом
+            //блокируем drawer - теперь его нельзя открыть свайпом
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
-            // Отключаем индикатор drawer (иконку гамбургера)
+            //отключаем индикатор drawer (иконку гамбургера)
             drawerToggle.setDrawerIndicatorEnabled(false);
 
-            // Проверяем что ActionBar существует
+            //проверяем что actionbar существует
             if (getSupportActionBar() != null) {
-                // Включаем кнопку "home" (она станет стрелкой)
+                //включаем кнопку "home" (она станет стрелкой)
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
 
-            // Устанавливаем свою иконку стрелки назад вместо гамбургера
+            //устанавливаем свою иконку стрелки назад вместо гамбургера
             toolbar.setNavigationIcon(R.drawable.baseline_arrow_back_24);
 
-            // ВАЖНО: Устанавливаем обработчик клика на эту иконку
-            // Когда пользователь нажмёт на стрелку, вызовется handleBackNavigation()
+            //важно: устанавливаем обработчик клика на эту иконку
+            //когда пользователь нажмёт на стрелку, вызовется handlebacknavigation()
             toolbar.setNavigationOnClickListener(v -> handleBackNavigation());
         } else {
 
-            // === РЕЖИМ "ГАМБУРГЕР" ===
+            // === режим "гамбургер" ===
 
-            // Разблокируем drawer - теперь его можно открыть свайпом
+            //разблокируем drawer - теперь его можно открыть свайпом
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
-            // Убираем старый listener чтобы не было конфликтов
+            //убираем старый listener чтобы не было конфликтов
             drawerLayout.removeDrawerListener(drawerToggle);
 
-            // Пересоздаём drawerToggle с нуля - это гарантирует что всё работает
+            //пересоздаём drawertoggle с нуля - это гарантирует что всё работает
             drawerToggle = new ActionBarDrawerToggle(
                     this,
                     drawerLayout,
@@ -453,35 +453,35 @@ public class MainActivity extends AppCompatActivity {
                     R.string.navigation_drawer_close
             );
 
-            // Добавляем новый listener
+            //добавляем новый listener
             drawerLayout.addDrawerListener(drawerToggle);
 
-            // Включаем индикатор drawer (показываем гамбургер)
+            //включаем индикатор drawer (показываем гамбургер)
             drawerToggle.setDrawerIndicatorEnabled(true);
 
-            // Проверяем что ActionBar существует
+            //проверяем что actionbar существует
             if (getSupportActionBar() != null) {
-                // Включаем кнопку "home"
+                //включаем кнопку "home"
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
 
-            // Синхронизируем состояние - это активирует гамбургер
+            //синхронизируем состояние - это активирует гамбургер
             drawerToggle.syncState();
         }
     }
 
-    // === МЕТОД ДЛЯ ЗАПРОСА ВСЕХ РАЗРЕШЕНИЙ ===
+    // === метод для запроса всех разрешений ===
     private void requestAllPermissions() {
-        // Список разрешений которые нужно запросить
+        //список разрешений которые нужно запросить
         java.util.ArrayList<String> permissionsToRequest = new java.util.ArrayList<>();
 
-        // 1. Геолокация (обязательно)
+        //1. геолокация (обязательно)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
-        // 2. Уведомления (для Android 13+)
+        //2. уведомления (для android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -489,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Если есть разрешения для запроса - запрашиваем
+        //если есть разрешения для запроса - запрашиваем
         if (!permissionsToRequest.isEmpty()) {
             ActivityCompat.requestPermissions(
                     this,
@@ -497,12 +497,12 @@ public class MainActivity extends AppCompatActivity {
                     1001
             );
         } else {
-            // Все разрешения уже выданы
+            //все разрешения уже выданы
             checkOverlayPermission();
         }
     }
 
-    // === ОБРАБОТКА РЕЗУЛЬТАТА ЗАПРОСА РАЗРЕШЕНИЙ ===
+    // === обработка результата запроса разрешений ===
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -517,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                     allGranted = false;
 
-                    // Определяем какое разрешение отклонено
+                    //определяем какое разрешение отклонено
                     if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                         deniedPermissions.append(getString(R.string.permission_location)).append("\n");
                     } else if (permissions[i].equals(Manifest.permission.POST_NOTIFICATIONS)) {
@@ -540,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // === ПРОВЕРКА РАЗРЕШЕНИЯ НА ПОКАЗ ПОВЕРХ ДРУГИХ ОКОН ===
+    // === проверка разрешения на показ поверх других окон ===
     private void checkOverlayPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {

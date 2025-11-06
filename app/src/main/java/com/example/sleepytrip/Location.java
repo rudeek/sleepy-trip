@@ -9,15 +9,15 @@ public class Location {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    private String name;          // Название остановки/места
-    private String address;       // Полный адрес
-    private double latitude;      // Широта
-    private double longitude;     // Долгота
-    private float radius;         // Радиус в метрах
-    private long timestamp;       // Дата добавления
-    private boolean isActive;     // Включена ли локация
+    private String name;          //название локации или остановки
+    private String address;       //полный адрес
+    private double latitude;      //широта
+    private double longitude;     //долгота
+    private float radius;         //радиус зоны в метрах
+    private long timestamp;       //время добавления локации
+    private boolean isActive;     //активна ли локация
 
-    // Конструктор
+    //конструктор создаёт объект с параметрами и ставит время добавления
     public Location(String name, String address, double latitude, double longitude, float radius) {
         this.name = name;
         this.address = address;
@@ -25,19 +25,20 @@ public class Location {
         this.longitude = longitude;
         this.radius = radius;
         this.timestamp = System.currentTimeMillis();
-        this.isActive = false;  // По умолчанию выключена
+        this.isActive = false;  //по умолчанию выключена
     }
 
-
+    //возвращает состояние активности
     public boolean isActive() {
         return isActive;
     }
 
+    //устанавливает активность локации
     public void setActive(boolean active) {
         isActive = active;
     }
 
-    // Геттеры и сеттеры
+    //геттеры и сеттеры для всех полей
     public int getId() {
         return id;
     }

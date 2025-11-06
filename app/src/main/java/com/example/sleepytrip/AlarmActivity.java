@@ -34,16 +34,19 @@ public class AlarmActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Применяем сохранённый язык
+        //применяет сохранённый язык интерфейса
         String savedLanguage = SettingsFragment.getCurrentLanguage(this);
         SettingsFragment.setLocale(this, savedLanguage);
 
+        //настраивает флаги окна для отображения будильника поверх экрана
         setupWindowFlags();
 
         setContentView(R.layout.activity_alarm);
 
+        //инициализация базы данных
         db = AppDatabase.getInstance(this);
 
+        //получаем данные локации из intent
         locationName = getIntent().getStringExtra("location_name");
         locationAddress = getIntent().getStringExtra("location_address");
 
@@ -51,18 +54,19 @@ public class AlarmActivity extends AppCompatActivity {
         TextView tvAlarmMessage = findViewById(R.id.tv_alarm_message);
         Button btnStopAlarm = findViewById(R.id.btn_stop_alarm);
 
-        // Используем строковые ресурсы
+        //устанавливает заголовок и сообщение будильника
         tvAlarmTitle.setText(getString(R.string.alarm_title));
         tvAlarmMessage.setText(locationName + "\n" + locationAddress);
 
+        //запускает звук и вибрацию будильника
         playAlarmSound();
         startVibration();
 
+        //обработчик кнопки "остановить"
         btnStopAlarm.setOnClickListener(v -> {
             stopServiceAlarm();
             stopAlarmSound();
             stopVibration();
-
             disableLocationAndCheckService();
             finish();
         });
@@ -70,7 +74,7 @@ public class AlarmActivity extends AppCompatActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        // Применяем язык перед созданием контекста
+        //применяет язык до создания контекста активности
         String savedLanguage = newBase.getSharedPreferences("SleepyTripSettings", Context.MODE_PRIVATE)
                 .getString("language", "en");
 
@@ -91,6 +95,7 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void setupWindowFlags() {
+        //разрешает будильнику отображаться поверх заблокированного экрана
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
@@ -104,6 +109,7 @@ public class AlarmActivity extends AppCompatActivity {
                         WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
+        //для экранов с вырезами (notch)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getWindow().getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -111,6 +117,7 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void stopServiceAlarm() {
+        //отправляет broadcast для остановки сервиса будильника
         try {
             Intent stopIntent = new Intent("STOP_ALARM");
             stopIntent.setPackage(getPackageName());
@@ -122,9 +129,9 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void disableLocationAndCheckService() {
+        //отключает сработавшую локацию и проверяет, нужно ли остановить сервис
         new Thread(() -> {
             try {
-                // Получаем ID из Intent
                 final int locationId = getIntent().getIntExtra("location_id", -1);
 
                 if (locationId == -1) {
@@ -138,13 +145,10 @@ public class AlarmActivity extends AppCompatActivity {
                     return;
                 }
 
-                Log.d("AlarmActivity", "🔍 Отключаем локацию ID=" + locationId);
-
-                // ШАГ 1: Получаем и выключаем локацию
                 com.example.sleepytrip.Location targetLocation = db.locationDao().getLocationById(locationId);
 
                 if (targetLocation == null) {
-                    Log.e("AlarmActivity", "❌ Локация ID=" + locationId + " НЕ НАЙДЕНА в БД!");
+                    Log.e("AlarmActivity", "❌ Локация не найдена в БД!");
                     runOnUiThread(() -> {
                         Toast.makeText(AlarmActivity.this,
                                 "Ошибка: локация не найдена",
@@ -154,64 +158,40 @@ public class AlarmActivity extends AppCompatActivity {
                     return;
                 }
 
-                Log.d("AlarmActivity", "✅ Найдена локация: " + targetLocation.getName());
-
-                // Выключаем локацию
+                //отключает локацию и обновляет запись в базе
                 targetLocation.setActive(false);
                 db.locationDao().update(targetLocation);
 
-                Log.d("AlarmActivity", "✅ Локация обновлена в БД (Active=false)");
-
                 final String locationName = targetLocation.getName();
 
-                // ШАГ 2: Проверяем есть ли ещё активные локации
+                //проверяет наличие активных локаций
                 List<Location> allLocations = db.locationDao().getAllLocations();
-                Log.d("AlarmActivity", "📋 Всего локаций в БД: " + allLocations.size());
-
                 boolean hasActiveLocation = false;
                 for (Location location : allLocations) {
-                    Log.d("AlarmActivity", "  - " + location.getName() +
-                            " (ID=" + location.getId() + ", Active=" + location.isActive() + ")");
-                    if (location.isActive()) {
-                        hasActiveLocation = true;
-                    }
+                    if (location.isActive()) hasActiveLocation = true;
                 }
-
-                Log.d("AlarmActivity", "🎯 Результат проверки: hasActiveLocation = " + hasActiveLocation);
 
                 final boolean shouldStopService = !hasActiveLocation;
 
-                // ШАГ 3: Показываем уведомления и останавливаем сервис если нужно
+                //показывает уведомления и при необходимости останавливает сервис
                 runOnUiThread(() -> {
-                    // Первое уведомление - о выключении локации
                     Toast.makeText(AlarmActivity.this,
                             "Будильник для \"" + locationName + "\" выключен",
                             Toast.LENGTH_SHORT).show();
 
                     if (shouldStopService) {
-                        Log.d("AlarmActivity", "🛑 Останавливаем LocationService");
-
-                        // Останавливаем сервис
                         Intent serviceIntent = new Intent(AlarmActivity.this, LocationService.class);
-                        boolean stopped = stopService(serviceIntent);
-
-                        Log.d("AlarmActivity", "📡 stopService() вернул: " + stopped);
-
-                        // Второе уведомление - об остановке сервиса
+                        stopService(serviceIntent);
                         Toast.makeText(AlarmActivity.this,
                                 "Отслеживание локаций остановлено",
                                 Toast.LENGTH_LONG).show();
-                    } else {
-                        Log.d("AlarmActivity", "✅ Сервис продолжает работать (есть активные локации)");
                     }
 
-                    // Закрываем активность
                     finish();
                 });
 
             } catch (Exception e) {
-                Log.e("AlarmActivity", "❌ ОШИБКА disableLocationAndCheckService: " + e.getMessage(), e);
-                e.printStackTrace();
+                Log.e("AlarmActivity", "❌ Ошибка disableLocationAndCheckService: " + e.getMessage(), e);
                 runOnUiThread(() -> {
                     Toast.makeText(AlarmActivity.this,
                             "Ошибка при отключении локации",
@@ -223,31 +203,29 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void playAlarmSound() {
+        //воспроизводит звук будильника
         try {
             Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (alarmUri == null) {
                 alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             }
             ringtone = RingtoneManager.getRingtone(this, alarmUri);
-            if (ringtone != null) {
-                ringtone.play();
-            }
+            if (ringtone != null) ringtone.play();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void stopAlarmSound() {
-        if (ringtone != null && ringtone.isPlaying()) {
-            ringtone.stop();
-        }
+        //останавливает звук будильника
+        if (ringtone != null && ringtone.isPlaying()) ringtone.stop();
     }
 
     private void startVibration() {
+        //запускает вибрацию при срабатывании будильника
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (vibrator != null && vibrator.hasVibrator()) {
             long[] pattern = {0, 500, 200, 500, 200, 500};
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
             } else {
@@ -257,37 +235,31 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void stopVibration() {
-        if (vibrator != null) {
-            vibrator.cancel();
-        }
+        //останавливает вибрацию
+        if (vibrator != null) vibrator.cancel();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
+        //останавливает звук и вибрацию перед уничтожением активности
         stopAlarmSound();
         stopVibration();
 
+        //отправляет broadcast для сброса состояния локации
         int locationId = getIntent().getIntExtra("location_id", -1);
-
         if (locationId != -1) {
-            Log.d("AlarmActivity", "🧹 onDestroy: сбрасываю локацию ID=" + locationId);
-
             Intent resetIntent = new Intent("LOCATION_RESET");
             resetIntent.setPackage(getPackageName());
             resetIntent.putExtra("LOCATION_ID", locationId);
             sendBroadcast(resetIntent);
-
-            Log.d("AlarmActivity", "📡 Broadcast LOCATION_RESET отправлен для ID=" + locationId);
-        } else {
-            Log.w("AlarmActivity", "⚠️ location_id не найден в Intent!");
         }
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
-        // Блокируем кнопку назад
+        //блокирует кнопку "назад", чтобы нельзя было закрыть будильник
     }
 }

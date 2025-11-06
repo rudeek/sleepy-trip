@@ -37,33 +37,33 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        // Инициализируем SharedPreferences
+        //инициализируем sharedpreferences
         prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
-        // Находим все элементы настроек
+        //находим все элементы настроек
         settingUnits = view.findViewById(R.id.setting_units);
         settingLanguage = view.findViewById(R.id.setting_language);
         settingSupport = view.findViewById(R.id.setting_support);
 
-        // === ОБРАБОТЧИКИ КЛИКОВ ===
+        // === обработчики кликов ===
 
-        // Units - выбор единиц измерения (км/мили)
+        //units - выбор единиц измерения (км/мили)
         settingUnits.setOnClickListener(v -> showUnitsBottomSheet());
 
-        // Language - выбор языка
+        //language - выбор языка
         settingLanguage.setOnClickListener(v -> showLanguageBottomSheet());
 
 
 
-        // Rate app - оценить приложение
+        //rate app - оценить приложение
         settingSupport.setOnClickListener(v -> showSupportDialog());
 
         return view;
     }
 
-    // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЕДИНИЦ ===
+    // === метод для показа bottomsheet с выбором единиц ===
     private void showUnitsBottomSheet() {
-        // ⭐ ИСПОЛЬЗУЕМ СТИЛЬ BottomSheetDialogTheme
+        //используем стиль bottomsheetdialogtheme
         BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
 
         View sheetView = LayoutInflater.from(requireContext())
@@ -105,9 +105,9 @@ public class SettingsFragment extends Fragment {
         bottomSheet.show();
     }
 
-    // === МЕТОД ДЛЯ ПОКАЗА BOTTOMSHEET С ВЫБОРОМ ЯЗЫКА ===
+    // === метод для показа bottomsheet с выбором языка ===
     private void showLanguageBottomSheet() {
-        // ⭐ ИСПОЛЬЗУЕМ СТИЛЬ BottomSheetDialogTheme
+        //используем стиль bottomsheetdialogtheme
         BottomSheetDialog bottomSheet = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
 
         View sheetView = LayoutInflater.from(requireContext())
@@ -124,24 +124,24 @@ public class SettingsFragment extends Fragment {
 
         String currentLanguage = prefs.getString(KEY_LANGUAGE, "en");
 
-        // Устанавливаем галочки
+        //устанавливаем галочки
         checkEnglish.setVisibility(currentLanguage.equals("en") ? View.VISIBLE : View.GONE);
         checkRussian.setVisibility(currentLanguage.equals("ru") ? View.VISIBLE : View.GONE);
         checkRomanian.setVisibility(currentLanguage.equals("ro") ? View.VISIBLE : View.GONE);
 
-        // English
+        //english
         optionEnglish.setOnClickListener(v -> {
             changeLanguage("en");
             bottomSheet.dismiss();
         });
 
-        // Russian
+        //russian
         optionRussian.setOnClickListener(v -> {
             changeLanguage("ru");
             bottomSheet.dismiss();
         });
 
-        // Romanian
+        //romanian
         optionRomanian.setOnClickListener(v -> {
             changeLanguage("ro");
             bottomSheet.dismiss();
@@ -150,23 +150,23 @@ public class SettingsFragment extends Fragment {
         bottomSheet.show();
     }
 
-    // === МЕТОД ДЛЯ СМЕНЫ ЯЗЫКА ===
+    // === метод для смены языка ===
     private void changeLanguage(String languageCode) {
-        // Сохраняем выбранный язык
+        //сохраняем выбранный язык
         prefs.edit().putString(KEY_LANGUAGE, languageCode).apply();
 
-        // ⭐ ВАЖНО: Сохраняем флаг что мы в настройках
+        //сохраняем флаг что мы в настройках
         prefs.edit().putBoolean("was_in_settings", true).apply();
 
-        // Применяем язык
+        //применяем язык
         setLocale(requireContext(), languageCode);
 
-        // Показываем уведомление
+        //показываем уведомление
         Toast.makeText(requireContext(),
                 getString(R.string.language_changed),
                 Toast.LENGTH_LONG).show();
 
-        // Перезапускаем активность для применения изменений
+        //перезапускаем активность для применения изменений
         requireActivity().recreate();
         Intent intent = new Intent(requireContext(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -175,7 +175,7 @@ public class SettingsFragment extends Fragment {
 
     }
 
-    // === МЕТОД ДЛЯ УСТАНОВКИ LOCALE ===
+    // === метод для установки locale ===
     public static void setLocale(Context context, String languageCode) {
         Locale locale = new Locale(languageCode);
         Locale.setDefault(locale);
@@ -193,19 +193,19 @@ public class SettingsFragment extends Fragment {
         resources.updateConfiguration(config, resources.getDisplayMetrics());
     }
 
-    // === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ТЕКУЩЕГО ЯЗЫКА ===
+    // === публичный метод для получения текущего языка ===
     public static String getCurrentLanguage(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_LANGUAGE, "en");
     }
 
-    // === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ТЕКУЩИХ ЕДИНИЦ ИЗМЕРЕНИЯ ===
+    // === публичный метод для получения текущих единиц измерения ===
     public static String getUnits(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_UNITS, UNITS_KM);
     }
 
-    // === МЕТОД ДЛЯ КОНВЕРТАЦИИ МЕТРОВ В ТЕКУЩИЕ ЕДИНИЦЫ ===
+    // === метод для конвертации метров в текущие единицы ===
     public static String formatDistance(Context context, float meters) {
         String units = getUnits(context);
 

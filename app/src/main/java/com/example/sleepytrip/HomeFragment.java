@@ -41,13 +41,13 @@ public class HomeFragment extends Fragment {
     private LocationAdapter adapter;
     private AppDatabase db;
 
-    // Флаг режима удаления
+    //флаг режима удаления
     private boolean isDeleteMode = false;
 
-    // Флаг "выбраны все"
+    //флаг "выбраны все"
     private boolean isAllSelected = false;
 
-    // MenuItem для галочки
+    //menuitem для галочки
     private MenuItem selectAllItem;
 
     private ActivityResultLauncher<String[]> permissionLauncher;
@@ -56,7 +56,7 @@ public class HomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Включаем меню в toolbar
+        //включаем меню в toolbar
         setHasOptionsMenu(true);
 
         permissionLauncher = registerForActivityResult(
@@ -79,18 +79,15 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Находим элементы
+        //находим элементы
         recyclerView = view.findViewById(R.id.recycler_locations);
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
-
-        // ⭐ Обновите эти строки
-        View deleteModeBar = view.findViewById(R.id.delete_mode_bottom_bar);
         btnCancelDelete = view.findViewById(R.id.btn_cancel_delete);
         btnConfirmDelete = view.findViewById(R.id.btn_confirm_delete);
 
         db = AppDatabase.getInstance(requireContext());
 
-        // Настраиваем RecyclerView
+        //настраиваем recyclerview
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         adapter = new LocationAdapter((location, isChecked) -> {
@@ -117,10 +114,10 @@ public class HomeFragment extends Fragment {
             updateSelectAllIcon();
         });
 
-        // === КНОПКА ОТМЕНЫ ===
+        // === кнопка отмены ===
         btnCancelDelete.setOnClickListener(v -> exitDeleteMode());
 
-        // === КНОПКА УДАЛЕНИЯ ===
+        // === кнопка удаления ===
         btnConfirmDelete.setOnClickListener(v -> {
             List<Location> selectedLocations = adapter.getSelectedLocations();
 
@@ -131,7 +128,7 @@ public class HomeFragment extends Fragment {
                 return;
             }
 
-            // Удаляем выбранные локации
+            //удаляем выбранные локации
             for (Location location : selectedLocations) {
                 db.locationDao().delete(location);
             }
@@ -140,10 +137,10 @@ public class HomeFragment extends Fragment {
                     getString(R.string.home_deleted, selectedLocations.size()),
                     Toast.LENGTH_SHORT).show();
 
-            // Выходим из режима удаления
+            //выходим из режима удаления
             exitDeleteMode();
 
-            // Обновляем список
+            //обновляем список
             loadLocations();
         });
 
@@ -165,24 +162,24 @@ public class HomeFragment extends Fragment {
         loadLocations();
     }
 
-    // Войти в режим удаления
+    //войти в режим удаления
     private void enterDeleteMode() {
         isDeleteMode = true;
         adapter.setDeleteMode(true);
 
-        // Получаем ссылку на delete bar
+        //получаем ссылку на delete bar
         View deleteBar = getView().findViewById(R.id.delete_mode_bottom_bar);
 
-        // Показываем delete bar с анимацией снизу вверх
+        //показываем delete bar с анимацией снизу вверх
         deleteBar.setVisibility(View.VISIBLE);
-        deleteBar.setTranslationY(deleteBar.getHeight()); // Начальная позиция - за экраном
+        deleteBar.setTranslationY(deleteBar.getHeight()); // начальная позиция - за экраном
         deleteBar.animate()
-                .translationY(0) // Конечная позиция - на месте
+                .translationY(0) // конечная позиция - на месте
                 .setDuration(300)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
 
-        // Добавляем padding снизу для RecyclerView после анимации
+        //добавляем padding снизу для recyclerview после анимации
         deleteBar.post(() -> {
             int deleteBarHeight = deleteBar.getHeight();
             recyclerView.setPadding(
@@ -193,7 +190,7 @@ public class HomeFragment extends Fragment {
             );
         });
 
-        // Скрываем bottom navigation с анимацией
+        //скрываем bottom navigation с анимацией
         if (getActivity() instanceof MainActivity) {
             MainActivity activity = (MainActivity) getActivity();
 
@@ -216,7 +213,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Выйти из режима удаления
+    //выйти из режима удаления
     private void exitDeleteMode() {
         isDeleteMode = false;
         isAllSelected = false;
@@ -226,9 +223,9 @@ public class HomeFragment extends Fragment {
 
         View deleteBar = getView().findViewById(R.id.delete_mode_bottom_bar);
 
-        // DeleteBar уезжает СВЕРХУ ВНИЗ
+        //deletebar уезжает сверху вниз
         deleteBar.animate()
-                .translationY(deleteBar.getHeight()) // Уезжает вниз
+                .translationY(deleteBar.getHeight()) // уезжает вниз
                 .setDuration(300)
                 .setInterpolator(new android.view.animation.AccelerateInterpolator())
                 .withEndAction(() -> deleteBar.setVisibility(View.GONE))
@@ -244,23 +241,23 @@ public class HomeFragment extends Fragment {
         if (getActivity() instanceof MainActivity) {
             MainActivity activity = (MainActivity) getActivity();
 
-            // BottomAppBar появляется СНИЗУ ВВЕРХ
+            //bottomappbar появляется снизу вверх
             activity.binding.bottomAppBar.setVisibility(View.VISIBLE);
             activity.binding.bottomAppBar.setAlpha(0f);
-            activity.binding.bottomAppBar.setTranslationY(activity.binding.bottomAppBar.getHeight()); // Начинается снизу
+            activity.binding.bottomAppBar.setTranslationY(activity.binding.bottomAppBar.getHeight()); // начинается снизу
             activity.binding.bottomAppBar.animate()
                     .alpha(1f)
-                    .translationY(0) // Поднимается на свою позицию
+                    .translationY(0) // поднимается на свою позицию
                     .setDuration(300)
                     .start();
 
-            // Просто показываем FAB
+            //просто показываем fab
             activity.binding.fabAdd.setVisibility(View.VISIBLE);
             activity.binding.fabAdd.setAlpha(1f);
             activity.binding.fabAdd.setScaleX(1f);
             activity.binding.fabAdd.setScaleY(1f);
 
-            // Восстанавливаем отступ снизу
+            //восстанавливаем отступ снизу
             activity.binding.frameLayout.post(() -> {
                 int bottomBarHeight = activity.binding.bottomAppBar.getHeight();
                 activity.binding.frameLayout.setPadding(0, 0, 0, bottomBarHeight);
@@ -270,7 +267,7 @@ public class HomeFragment extends Fragment {
 
 
 
-    // Переключить "выбрать все"
+    //переключить "выбрать все"
     private void toggleSelectAll() {
         if (isAllSelected) {
             adapter.deselectAll();
@@ -282,14 +279,14 @@ public class HomeFragment extends Fragment {
         updateSelectAllIcon();
     }
 
-    // Выбрать все
+    //выбрать все
     private void selectAll() {
         adapter.selectAll();
         isAllSelected = true;
         updateSelectAllIcon();
     }
 
-    // Обновить иконку галочки
+    //обновить иконку галочки
     private void updateSelectAllIcon() {
         if (selectAllItem != null) {
             if (isAllSelected) {
@@ -372,7 +369,7 @@ public class HomeFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_select_all) {
-            // Проверяем есть ли локации
+            //проверяем есть ли локации
             if (adapter.getItemCount() == 0) {
                 Toast.makeText(requireContext(),
                         getString(R.string.home_no_locations_to_select),
@@ -380,18 +377,18 @@ public class HomeFragment extends Fragment {
                 return true;
             }
 
-            // Клик по галочке
+            //клик по галочке
             if (!isDeleteMode) {
-                // Если не в режиме удаления - входим в него и выбираем все
+                //если не в режиме удаления - входим в него и выбираем все
                 enterDeleteMode();
                 selectAll();
             } else {
-                // Если уже в режиме удаления - переключаем выбор всех
+                //если уже в режиме удаления - переключаем выбор всех
                 toggleSelectAll();
             }
             return true;
         } else if (item.getItemId() == R.id.action_delete_mode) {
-            // Проверяем есть ли локации
+            //проверяем есть ли локации
             if (adapter.getItemCount() == 0) {
                 Toast.makeText(requireContext(),
                         getString(R.string.home_no_locations_to_delete),
@@ -399,7 +396,7 @@ public class HomeFragment extends Fragment {
                 return true;
             }
 
-            // Клик по корзине
+            //клик по корзине
             if (!isDeleteMode) {
                 enterDeleteMode();
             } else {

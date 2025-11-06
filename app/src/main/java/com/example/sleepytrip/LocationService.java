@@ -71,14 +71,14 @@ public class LocationService extends Service {
                     Boolean wasRemoved = triggeredAlarms.remove(locationId);
 
                     if (wasRemoved != null) {
-                        Log.d("LocationService", "✅ Сброшен статус локации ID=" + locationId);
+                        Log.d("LocationService", "✅ сброшен статус локации id=" + locationId);
                     } else {
-                        Log.w("LocationService", "⚠️ Локация ID=" + locationId + " не найдена в triggeredAlarms");
+                        Log.w("LocationService", "⚠️ локация id=" + locationId + " не найдена в triggeredalarms");
                     }
 
-                    Log.d("LocationService", "📊 Активных будильников: " + triggeredAlarms.size());
+                    Log.d("LocationService", "📊 активных будильников: " + triggeredAlarms.size());
                 } else {
-                    Log.e("LocationService", "❌ LOCATION_ID не передан в broadcast!");
+                    Log.e("LocationService", "❌ location_id не передан в broadcast!");
                 }
             }
         }
@@ -88,7 +88,7 @@ public class LocationService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if ("STOP_ALARM".equals(intent.getAction())) {
-                Log.d("LocationService", "🔇 Получен сигнал остановки будильника");
+                Log.d("LocationService", "🔇 получен сигнал остановки будильника");
                 stopAlarmSoundAndVibrate();
             }
         }
@@ -104,7 +104,7 @@ public class LocationService extends Service {
         IntentFilter stopAlarmFilter = new IntentFilter("STOP_ALARM");
         registerReceiver(stopAlarmReceiver, stopAlarmFilter, Context.RECEIVER_NOT_EXPORTED);
 
-        Log.d("LocationService", "✅ BroadcastReceivers зарегистрированы");
+        Log.d("LocationService", "✅ broadcastreceivers зарегистрированы");
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         db = AppDatabase.getInstance(this);
@@ -120,9 +120,9 @@ public class LocationService extends Service {
         createNotificationChannels();
 
         try {
-            startForeground(1, createNotification("Отслеживание локаций", "Запуск..."));
+            startForeground(1, createNotification("отслеживание локаций", "запуск..."));
         } catch (Exception e) {
-            Log.e("LocationService", "Foreground start failed", e);
+            Log.e("LocationService", "foreground start failed", e);
         }
 
         startLocationTracking();
@@ -137,7 +137,7 @@ public class LocationService extends Service {
             public void run() {
                 if (currentUserLocation != null) {
                     updateNotificationWithDistance(currentUserLocation);
-                    Log.d("LocationService", "📍 Notification обновлен");
+                    Log.d("LocationService", "📍 notification обновлен");
                 }
 
                 notificationUpdateHandler.postDelayed(this, 10000);
@@ -165,7 +165,7 @@ public class LocationService extends Service {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     currentUserLocation = location;
-                    Log.d("LocationService", String.format("📍 Локация обновлена: %.6f, %.6f (точность: %.1fm)",
+                    Log.d("LocationService", String.format("📍 локация обновлена: %.6f, %.6f (точность: %.1fm)",
                             location.getLatitude(), location.getLongitude(), location.getAccuracy()));
 
                     checkProximity(location);
@@ -186,7 +186,7 @@ public class LocationService extends Service {
                     .addOnSuccessListener(location -> {
                         if (location != null) {
                             currentUserLocation = location;
-                            Log.d("LocationService", "✅ Начальная локация получена");
+                            Log.d("LocationService", "✅ начальная локация получена");
                             checkProximity(location);
                             updateNotificationWithDistance(location);
                         }
@@ -198,7 +198,7 @@ public class LocationService extends Service {
         List<com.example.sleepytrip.Location> locations = db.locationDao().getActiveLocations();
 
         if (locations.isEmpty()) {
-            Log.d("LocationService", "⚠️ Нет активных локаций - notification скрыт");
+            Log.d("LocationService", "⚠️ нет активных локаций - notification скрыт");
 
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (manager != null) {
@@ -241,11 +241,11 @@ public class LocationService extends Service {
             String text;
 
             if (minDistance <= nearestLocation.getRadius()) {
-                text = "🔔 ВЫ В ЗОНЕ! " + distanceText;
+                text = "🔔 вы в зоне! " + distanceText;
             } else if (minDistance <= nearestLocation.getRadius() * 2) {
-                text = "⚠️ Близко к зоне! " + distanceText;
+                text = "⚠️ близко к зоне! " + distanceText;
             } else {
-                text = "Расстояние: " + distanceText;
+                text = "расстояние: " + distanceText;
             }
 
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -259,24 +259,24 @@ public class LocationService extends Service {
         List<com.example.sleepytrip.Location> allLocations = db.locationDao().getAllLocations();
         for (com.example.sleepytrip.Location location : allLocations) {
             if (!location.isActive() && triggeredAlarms.containsKey(location.getId())) {
-                Log.d("LocationService", "🔄 Сбрасываем флаг для неактивной локации ID: " + location.getId());
+                Log.d("LocationService", "🔄 сбрасываем флаг для неактивной локации id: " + location.getId());
                 triggeredAlarms.remove(location.getId());
             }
         }
 
         List<com.example.sleepytrip.Location> activeLocations = db.locationDao().getActiveLocations();
 
-        Log.d("LocationService", "🔍 Проверка близости: активных локаций = " + activeLocations.size());
+        Log.d("LocationService", "🔍 проверка близости: активных локаций = " + activeLocations.size());
 
         for (com.example.sleepytrip.Location savedLocation : activeLocations) {
-            Log.d("LocationService", "📍 Проверяем локацию: " + savedLocation.getName() +
-                    " (ID: " + savedLocation.getId() + ", Active: " + savedLocation.isActive() + ")");
+            Log.d("LocationService", "📍 проверяем локацию: " + savedLocation.getName() +
+                    " (id: " + savedLocation.getId() + ", active: " + savedLocation.isActive() + ")");
 
             Boolean hasTriggered = triggeredAlarms.get(savedLocation.getId());
-            Log.d("LocationService", "  ⏰ Будильник уже срабатывал? " + hasTriggered);
+            Log.d("LocationService", "  ⏰ будильник уже срабатывал? " + hasTriggered);
 
             if (hasTriggered != null && hasTriggered) {
-                Log.d("LocationService", "  ⏭️ Будильник уже срабатывал, пропускаем");
+                Log.d("LocationService", "  ⏭️ будильник уже срабатывал, пропускаем");
                 continue;
             }
 
@@ -290,28 +290,28 @@ public class LocationService extends Service {
             );
 
             float distance = results[0];
-            Log.d("LocationService", "  📏 Расстояние: " + distance + "м, Радиус: " + savedLocation.getRadius() + "м");
+            Log.d("LocationService", "  📏 расстояние: " + distance + "м, радиус: " + savedLocation.getRadius() + "м");
 
             if (distance <= savedLocation.getRadius()) {
                 Log.w("LocationService",
-                        "🚨 БУДИЛЬНИК СРАБОТАЛ! Дистанция: " + distance + "м, Радиус: " + savedLocation.getRadius() + "м");
+                        "🚨 будильник сработал! дистанция: " + distance + "м, радиус: " + savedLocation.getRadius() + "м");
 
                 triggeredAlarms.put(savedLocation.getId(), true);
-                Log.d("LocationService", "✅ ID " + savedLocation.getId() + " добавлен в triggeredAlarms");
+                Log.d("LocationService", "✅ id " + savedLocation.getId() + " добавлен в triggeredalarms");
 
                 showAlarmActivity(savedLocation);
             }
         }
     }
 
-    // ⭐ ИСПРАВЛЕННЫЙ МЕТОД: Определяем состояние экрана и запускаем Activity
+    //определяем состояние экрана и запускаем activity
     private void showAlarmActivity(com.example.sleepytrip.Location location) {
         try {
             playAlarmSoundAndVibrate();
 
             PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
             boolean isScreenOn = powerManager.isInteractive();
-            Log.d("LocationService", "📱 Экран включён: " + isScreenOn);
+            Log.d("LocationService", "📱 экран включён: " + isScreenOn);
 
             Intent alarmIntent = new Intent(this, AlarmActivity.class);
             alarmIntent.putExtra("location_name", location.getName());
@@ -319,13 +319,13 @@ public class LocationService extends Service {
             alarmIntent.putExtra("location_id", location.getId());
 
             if (isScreenOn) {
-                // ⭐ ЭКРАН ВКЛЮЧЁН - запускаем Activity напрямую
-                Log.d("LocationService", "🔓 Экран включён, запускаем Activity напрямую");
+                //экран включён - запускаем activity напрямую
+                Log.d("LocationService", "🔓 экран включён, запускаем activity напрямую");
 
-                // Проверяем разрешение на показ поверх других окон (для Android 10+)
+                //проверяем разрешение на показ поверх других окон (для android 10+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                         !Settings.canDrawOverlays(this)) {
-                    Log.w("LocationService", "⚠️ Нет разрешения SYSTEM_ALERT_WINDOW");
+                    Log.w("LocationService", "⚠️ нет разрешения system_alert_window");
                 }
 
                 alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
@@ -333,11 +333,11 @@ public class LocationService extends Service {
                         Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 startActivity(alarmIntent);
-                Log.d("LocationService", "✅ Activity запущена напрямую");
+                Log.d("LocationService", "✅ activity запущена напрямую");
 
             } else {
-                // ⭐ ЭКРАН ВЫКЛЮЧЁН - используем Full Screen Intent
-                Log.d("LocationService", "🔒 Экран выключен, используем Full Screen Intent");
+                //экран выключен - используем full screen intent
+                Log.d("LocationService", "🔒 экран выключен, используем full screen intent");
 
                 alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
@@ -352,8 +352,8 @@ public class LocationService extends Service {
 
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ALARM_CHANNEL_ID)
                         .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                        .setContentTitle("🚨 Будильник")
-                        .setContentText("Вы прибыли: " + location.getName())
+                        .setContentTitle("🚨 будильник")
+                        .setContentText("вы прибыли: " + location.getName())
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setAutoCancel(true)
@@ -366,7 +366,7 @@ public class LocationService extends Service {
                 if (notificationManager != null) {
                     int notificationId = 10000 + location.getId();
                     notificationManager.notify(notificationId, builder.build());
-                    Log.d("LocationService", "✅ Full Screen Intent отправлен");
+                    Log.d("LocationService", "✅ full screen intent отправлен");
 
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         notificationManager.cancel(notificationId);
@@ -375,7 +375,7 @@ public class LocationService extends Service {
             }
 
         } catch (Exception e) {
-            Log.e("LocationService", "❌ Ошибка запуска будильника: " + e.getMessage());
+            Log.e("LocationService", "❌ ошибка запуска будильника: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -389,10 +389,10 @@ public class LocationService extends Service {
             alarmRingtone = RingtoneManager.getRingtone(this, alarmUri);
             if (alarmRingtone != null) {
                 alarmRingtone.play();
-                Log.d("LocationService", "🔊 Звук будильника запущен");
+                Log.d("LocationService", "🔊 звук будильника запущен");
             }
         } catch (Exception e) {
-            Log.e("LocationService", "❌ Ошибка воспроизведения звука: " + e.getMessage());
+            Log.e("LocationService", "❌ ошибка воспроизведения звука: " + e.getMessage());
         }
 
         try {
@@ -405,10 +405,10 @@ public class LocationService extends Service {
                 } else {
                     alarmVibrator.vibrate(pattern, 0);
                 }
-                Log.d("LocationService", "📳 Вибрация запущена");
+                Log.d("LocationService", "📳 вибрация запущена");
             }
         } catch (Exception e) {
-            Log.e("LocationService", "❌ Ошибка вибрации: " + e.getMessage());
+            Log.e("LocationService", "❌ ошибка вибрации: " + e.getMessage());
         }
     }
 
@@ -416,13 +416,13 @@ public class LocationService extends Service {
         if (alarmRingtone != null && alarmRingtone.isPlaying()) {
             alarmRingtone.stop();
             alarmRingtone = null;
-            Log.d("LocationService", "🔇 Звук остановлен");
+            Log.d("LocationService", "🔇 звук остановлен");
         }
 
         if (alarmVibrator != null) {
             alarmVibrator.cancel();
             alarmVibrator = null;
-            Log.d("LocationService", "📴 Вибрация остановлена");
+            Log.d("LocationService", "📴 вибрация остановлена");
         }
     }
 
@@ -437,7 +437,7 @@ public class LocationService extends Service {
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("SleepyTrip")
-                .setContentText("Ожидание активных локаций")
+                .setContentText("ожидание активных локаций")
                 .setSmallIcon(android.R.drawable.ic_menu_mylocation)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
@@ -474,10 +474,10 @@ public class LocationService extends Service {
             if (manager != null) {
                 NotificationChannel serviceChannel = new NotificationChannel(
                         CHANNEL_ID,
-                        "Отслеживание локаций",
+                        "отслеживание локаций",
                         NotificationManager.IMPORTANCE_LOW
                 );
-                serviceChannel.setDescription("Показывает расстояние до локаций");
+                serviceChannel.setDescription("показывает расстояние до локаций");
                 serviceChannel.setSound(null, null);
                 serviceChannel.enableVibration(false);
                 serviceChannel.setShowBadge(false);
@@ -485,17 +485,17 @@ public class LocationService extends Service {
 
                 NotificationChannel alarmChannel = new NotificationChannel(
                         ALARM_CHANNEL_ID,
-                        "Будильник прибытия",
+                        "будильник прибытия",
                         NotificationManager.IMPORTANCE_HIGH
                 );
-                alarmChannel.setDescription("Срабатывает при прибытии к месту назначения");
+                alarmChannel.setDescription("срабатывает при прибытии к месту назначения");
                 alarmChannel.enableVibration(false);
                 alarmChannel.setSound(null, null);
                 alarmChannel.setShowBadge(false);
                 alarmChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
                 manager.createNotificationChannel(alarmChannel);
 
-                Log.d("LocationService", "✅ Notification channels созданы");
+                Log.d("LocationService", "✅ notification channels созданы");
             }
         }
     }
@@ -514,29 +514,29 @@ public class LocationService extends Service {
         try {
             unregisterReceiver(resetReceiver);
             unregisterReceiver(stopAlarmReceiver);
-            Log.d("LocationService", "✅ BroadcastReceivers отписаны");
+            Log.d("LocationService", "✅ broadcastreceivers отписаны");
         } catch (IllegalArgumentException e) {
-            Log.w("LocationService", "⚠️ Receivers уже были отписаны");
+            Log.w("LocationService", "⚠️ receivers уже были отписаны");
         }
 
         if (notificationUpdateHandler != null && notificationUpdateRunnable != null) {
             notificationUpdateHandler.removeCallbacks(notificationUpdateRunnable);
-            Log.d("LocationService", "✅ Notification updates остановлены");
+            Log.d("LocationService", "✅ notification updates остановлены");
         }
 
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
-            Log.d("LocationService", "✅ Location updates остановлены");
+            Log.d("LocationService", "✅ location updates остановлены");
         }
 
         if (wakeLock != null && wakeLock.isHeld()) {
             wakeLock.release();
-            Log.d("LocationService", "✅ WakeLock освобождён");
+            Log.d("LocationService", "✅ wakelock освобождён");
         }
 
         triggeredAlarms.clear();
 
-        Log.d("LocationService", "🛑 LocationService полностью уничтожен");
+        Log.d("LocationService", "🛑 locationservice полностью уничтожен");
     }
 
     @Nullable

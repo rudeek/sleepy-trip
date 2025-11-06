@@ -19,30 +19,36 @@ import java.util.Set;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.LocationViewHolder> {
 
+    //список локаций для отображения
     private List<Location> locations = new ArrayList<>();
+    //слушатель кликов и переключений
     private OnLocationClickListener listener;
 
-    // Режим удаления
+    //режим удаления
     private boolean isDeleteMode = false;
 
-    // Множество выбранных локаций
+    //множество выбранных позиций для удаления
     private Set<Integer> selectedPositions = new HashSet<>();
 
+    //интерфейс для обработки переключения switch
     public interface OnLocationClickListener {
         void onSwitchChanged(Location location, boolean isChecked);
     }
 
+    //интерфейс для отслеживания изменения выбора
     public interface OnSelectionChangeListener {
         void onSelectionChanged(boolean allSelected, boolean noneSelected);
     }
 
+    //слушатель изменений выбора
     private OnSelectionChangeListener selectionChangeListener;
 
+    //установка слушателя выбора
     public void setOnSelectionChangeListener(OnSelectionChangeListener listener) {
         this.selectionChangeListener = listener;
     }
 
-
+    //конструктор адаптера с обработчиком переключения
     public LocationAdapter(OnLocationClickListener listener) {
         this.listener = listener;
     }
@@ -50,6 +56,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
     @NonNull
     @Override
     public LocationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //создаёт элемент списка из макета item_location
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_location, parent, false);
         return new LocationViewHolder(view);
@@ -57,14 +64,13 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
 
     @Override
     public void onBindViewHolder(@NonNull LocationViewHolder holder, int position) {
+        //получаем текущую локацию
         Location location = locations.get(position);
 
         holder.tvName.setText(location.getName());
         holder.tvAddress.setText(location.getAddress());
 
-        // Форматируем радиус
-
-        // Форматируем радиус с учётом языка и единиц
+        //форматируем радиус с учётом языка
         String radiusFormatted = SettingsFragment.formatDistance(
                 holder.itemView.getContext(),
                 location.getRadius()
@@ -76,18 +82,18 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
                 )
         );
 
-        // === РЕЖИМ УДАЛЕНИЯ ===
+        //если включён режим удаления
         if (isDeleteMode) {
-            // Показываем checkbox, скрываем switch и иконку
+            //показываем чекбокс и скрываем switch и иконку
             holder.checkBox.setVisibility(View.VISIBLE);
             holder.switchLocation.setVisibility(View.GONE);
             holder.ivIcon.setVisibility(View.GONE);
 
-            // Устанавливаем состояние checkbox
+            //устанавливаем состояние чекбокса
             holder.checkBox.setOnCheckedChangeListener(null);
             holder.checkBox.setChecked(selectedPositions.contains(position));
 
-            // Обработчик checkbox
+            //обработчик для чекбокса
             holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
                     selectedPositions.add(position);
@@ -95,7 +101,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
                     selectedPositions.remove(position);
                 }
 
-                // Уведомляем фрагмент об изменении выбора
+                //уведомляем слушателя о смене выбора
                 if (selectionChangeListener != null) {
                     boolean allSelected = isAllSelected();
                     boolean noneSelected = selectedPositions.isEmpty();
@@ -103,46 +109,47 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
                 }
             });
 
-
-            // Клик по карточке тоже переключает checkbox
+            //клик по элементу переключает чекбокс
             holder.itemView.setOnClickListener(v -> {
                 holder.checkBox.setChecked(!holder.checkBox.isChecked());
             });
 
         } else {
-            // === ОБЫЧНЫЙ РЕЖИМ ===
-            // Скрываем checkbox, показываем switch и иконку
+            //если обычный режим
+            //скрываем чекбокс и показываем switch с иконкой
             holder.checkBox.setVisibility(View.GONE);
             holder.switchLocation.setVisibility(View.VISIBLE);
             holder.ivIcon.setVisibility(View.VISIBLE);
 
-            // Устанавливаем состояние switch
+            //устанавливаем состояние switch
             holder.switchLocation.setOnCheckedChangeListener(null);
             holder.switchLocation.setChecked(location.isActive());
 
-            // Обработчик switch
+            //обработчик переключения состояния локации
             holder.switchLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (listener != null) {
                     listener.onSwitchChanged(location, isChecked);
                 }
             });
 
-            // Убираем обработчик клика
+            //убираем клик по элементу
             holder.itemView.setOnClickListener(null);
         }
     }
 
     @Override
     public int getItemCount() {
+        //возвращает количество элементов списка
         return locations.size();
     }
 
+    //устанавливает новые данные и обновляет список
     public void setLocations(List<Location> locations) {
         this.locations = locations;
         notifyDataSetChanged();
     }
 
-    // Включить/выключить режим удаления
+    //включает или выключает режим удаления
     public void setDeleteMode(boolean deleteMode) {
         this.isDeleteMode = deleteMode;
         if (!deleteMode) {
@@ -151,7 +158,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         notifyDataSetChanged();
     }
 
-    // Выбрать все локации
+    //выделяет все элементы списка
     public void selectAll() {
         selectedPositions.clear();
         for (int i = 0; i < locations.size(); i++) {
@@ -160,13 +167,13 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         notifyDataSetChanged();
     }
 
-    // Снять выбор со всех
+    //снимает выделение со всех элементов
     public void deselectAll() {
         selectedPositions.clear();
         notifyDataSetChanged();
     }
 
-    // Получить выбранные локации
+    //возвращает список выбранных локаций
     public List<Location> getSelectedLocations() {
         List<Location> selected = new ArrayList<>();
         for (int position : selectedPositions) {
@@ -177,11 +184,12 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         return selected;
     }
 
-    // Проверить выбраны ли все локации
+    //проверяет, выбраны ли все локации
     public boolean isAllSelected() {
         return selectedPositions.size() == locations.size() && locations.size() > 0;
     }
 
+    //внутренний класс для хранения ссылок на элементы интерфейса
     static class LocationViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvAddress;
@@ -190,9 +198,9 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         CheckBox checkBox;
         ImageView ivIcon;
 
-
         public LocationViewHolder(@NonNull View itemView) {
             super(itemView);
+            //инициализация элементов макета
             tvName = itemView.findViewById(R.id.tv_location_name);
             tvAddress = itemView.findViewById(R.id.tv_location_address);
             tvRadius = itemView.findViewById(R.id.tv_location_radius);

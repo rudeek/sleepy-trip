@@ -22,7 +22,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Units"
+        android:text="@string/units_dialog_title"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/lavender"
@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Kilometers"
+                    android:text="@string/units_kilometers"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="?attr/textColorPrimary"/>
@@ -82,7 +82,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Metric system (km, m)"
+                    android:text="@string/units_kilometers_desc"
                     android:textSize="14sp"
                     android:textColor="?attr/textColorSecondary"
                     android:layout_marginTop="4dp"/>
@@ -146,7 +146,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Miles"
+                    android:text="@string/units_miles"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="?attr/textColorPrimary"/>
@@ -154,7 +154,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Imperial system (mi, ft)"
+                    android:text="@string/units_miles_desc"
                     android:textSize="14sp"
                     android:textColor="?attr/textColorSecondary"
                     android:layout_marginTop="4dp"/>
