@@ -1,7 +1,6 @@
 package com.example.sleepytrip;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;

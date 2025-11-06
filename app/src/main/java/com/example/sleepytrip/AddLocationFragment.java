@@ -6,13 +6,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -51,22 +47,16 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
     //радиус хранится в метрах
     private float currentRadiusMeters = 500f;
 
-    //объект для получения текущей локации
-    private FusedLocationProviderClient fusedLocationClient;
-
     //координаты и данные пользователя
-    private LatLng currentUserLocation;
     private String currentCity = "Chisinau";
     private String currentCountry = "Moldova";
 
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //инициализация вью и элементов
         View view = inflater.inflate(R.layout.fragment_add_location, container, false);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         btnAddLocation = view.findViewById(R.id.btn_add_location);
         btnCancel = view.findViewById(R.id.btn_cancel);
